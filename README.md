@@ -27,3 +27,13 @@ Welcome to our PDF team GitHub repository! This space will be used for sharing c
 Please feel free to reach out if you have any questions or need assistance!
 
 Happy coding!
+
+
+
+# Want to learn how to Push/Pull instead of copying code?
+Watch this tutorial on how to install GitHub Desktop and clone a repo locally: https://www.youtube.com/watch?v=iv8rSLsi1xo&t=19s
+| Content | Time Stamp |
+|---------|------------|
+|Installing GitHub Desktop| 3:23 |
+| Cloning a Repo (Locally) | 3:45 |
+|Committing new changes| 5:03 |
