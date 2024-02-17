@@ -14,6 +14,16 @@ Welcome to our PDF team GitHub repository! This space will be used for sharing c
 ## Weekly Updates
 - Every **Thursday** night, the project manager will gather all changes made by each team member and merge them into the master document. The main branch will be updated accordingly.
 
+## Weekly Tasks (2/18 - 2/22)
+*Sunday - Thursday*
+
+| Task Name | Assignees | Description |
+|-------------|-------------|-------------|
+| GUI Enhancement | Luke | Enhance the appearance of the GUI, creating a main screen with an upload PDF button. Once uploaded, transition to a screen displaying the PDF and providing space for tools and comments. |
+| Comments Management | Mo, Kevin | Develop functionality for users to upload pre-written comments with associated points or write comments and assign points in real-time, saving them to a recorded document. |
+| PDF Styling | Alex, Harkiran | Implement print-style rendering of the uploaded PDF instead of just displaying text. |
+| Comments Display | David | Determine a method to display comments when a boundary is created or provide a simple checklist for users to select from. |
+
 Please feel free to reach out if you have any questions or need assistance!
 
 Happy coding!
