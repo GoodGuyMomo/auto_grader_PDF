@@ -38,21 +38,21 @@ class PDFPreviewer(QMainWindow):
         self.setMinimumSize(850, 900)  # Adjust the size as needed
                
         # Create widgets for comment functionality
-        #self.comment_text_edit = QTextEdit()
-        #self.points_edit = QLineEdit()
-        #self.add_comment_button = QPushButton("Add Comment")
-        #self.add_comment_button.clicked.connect(self.add_comment)
+        self.comment_text_edit = QTextEdit()
+        self.points_edit = QLineEdit()
+        self.add_comment_button = QPushButton("Add Comment")
+        self.add_comment_button.clicked.connect(self.add_comment)
         
         # Add the button to save comments to a file
-        #self.save_comments_button = QPushButton("Save Comments")
-        #self.save_comments_button.clicked.connect(self.save_comments_to_file)
+        self.save_comments_button = QPushButton("Save Comments")
+        self.save_comments_button.clicked.connect(self.save_comments_to_file)
         
         # Add the comment widgets
-        #layout.addWidget(self.comment_text_edit)
-        #layout.addWidget(self.points_edit)
-        #layout.addWidget(self.add_comment_button)
-        #layout.addWidget(self.save_comments_button)
-        #layout.addWidget(self.scroll_area)
+        layout.addWidget(self.comment_text_edit)
+        layout.addWidget(self.points_edit)
+        layout.addWidget(self.add_comment_button)
+        layout.addWidget(self.save_comments_button)
+        layout.addWidget(self.scroll_area)
         
         # Create button to upload answers
         self.upload_answer_button = QPushButton("Upload Answers")
