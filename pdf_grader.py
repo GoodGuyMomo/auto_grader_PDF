@@ -23,7 +23,7 @@ class PDFPreviewer(QMainWindow):
 
         self.btn_open = QPushButton("Open PDF")
         self.btn_open.clicked.connect(self.open_pdf)
-
+        
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
 
@@ -38,24 +38,31 @@ class PDFPreviewer(QMainWindow):
         self.setMinimumSize(850, 900)  # Adjust the size as needed
                
         # Create widgets for comment functionality
-        self.comment_text_edit = QTextEdit()
-        self.points_edit = QLineEdit()
-        self.add_comment_button = QPushButton("Add Comment")
-        self.add_comment_button.clicked.connect(self.add_comment)
+        #self.comment_text_edit = QTextEdit()
+        #self.points_edit = QLineEdit()
+        #self.add_comment_button = QPushButton("Add Comment")
+        #self.add_comment_button.clicked.connect(self.add_comment)
         
         # Add the button to save comments to a file
-        self.save_comments_button = QPushButton("Save Comments")
-        self.save_comments_button.clicked.connect(self.save_comments_to_file)
+        #self.save_comments_button = QPushButton("Save Comments")
+        #self.save_comments_button.clicked.connect(self.save_comments_to_file)
         
         # Add the comment widgets
-        layout.addWidget(self.comment_text_edit)
-        layout.addWidget(self.points_edit)
-        layout.addWidget(self.add_comment_button)
-        layout.addWidget(self.save_comments_button)
-        layout.addWidget(self.scroll_area)
+        #layout.addWidget(self.comment_text_edit)
+        #layout.addWidget(self.points_edit)
+        #layout.addWidget(self.add_comment_button)
+        #layout.addWidget(self.save_comments_button)
+        #layout.addWidget(self.scroll_area)
+        
+        # Create button to upload answers
+        self.upload_answer_button = QPushButton("Upload Answers")
+        self.upload_answer_button.clicked.connect(self.upload_answers)
+        
+        # Add the answer widgets
+        layout.addWidget(self.upload_answer_button)
 
         # Store the comments in a list
-        self.comments = []
+        #self.comments = []
 
     def open_pdf(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Open PDF File", "", "PDF Files (*.pdf)")
@@ -100,6 +107,35 @@ class PDFPreviewer(QMainWindow):
             except Exception as e:
                 print(f"An error occurred: {str(e)}")
                 QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
+    
+    # Allows user to upload a txt file containing comments and points
+    # Assumes the format that the first line contains the comment and the second line is the 
+    # number of points lost
+    def upload_answers(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Answer File", "", "Text Files (*.txt)")
+
+        if file_path:
+            try:
+                answers = []
+                points = []
+
+                # Open text file
+                with open(file_path, 'r') as file:
+                    lines = file.readlines()
+
+                    # Iterate through lines and process answers and points
+                    for i in range(0, len(lines), 2):
+                        answers.append(lines[i].strip())
+                        points.append(int(lines[i + 1].strip()))
+
+                # Output answers and points to check list contents
+                print("Answers:", answers)
+                print("Points:", points)
+
+            except Exception as e:
+                print(f"An error occurred: {str(e)}")
+                QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
+        
 
     def clear_scroll_layout(self):
         while self.scroll_layout.count():
