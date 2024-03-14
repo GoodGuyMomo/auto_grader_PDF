@@ -37,13 +37,6 @@ class PDFPreviewer(QMainWindow):
 
         # Set a fixed size for the main window
         self.setMinimumSize(850, 900)  # Adjust the size as needed
-        
-        # Create button to upload answers
-        self.upload_answer_button = QPushButton("Upload Answers")
-        self.upload_answer_button.clicked.connect(self.upload_answers)
-
-        # Add the answer widgets
-        layout.addWidget(self.upload_answer_button)
 
         # Create a table widget to display the comments and points
         self.comment_table = QTableWidget()
@@ -79,7 +72,7 @@ class PDFPreviewer(QMainWindow):
         layout.addLayout(comment_layout)
 
         # Add the button to save comments to a file
-        self.save_comments_button = QPushButton("EXPORT")
+        self.save_comments_button = QPushButton("Export")
         self.save_comments_button.clicked.connect(self.save_comments_to_file)
 
         # Add the comment widgets
