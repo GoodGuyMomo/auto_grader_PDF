@@ -1,53 +1,88 @@
+# pip install PyPDF2 DONE
+# pip install PyMuPDF DONE
+# pip install Pillow
+# The above lines are comments indicating that you need to install these libraries via pip if you haven't already done so.
+
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog,\
-    QLabel, QVBoxLayout, QWidget, QMessageBox, QScrollArea, QTextEdit, QHBoxLayout, QLineEdit
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, \
+    QLabel, QVBoxLayout, QWidget, QMessageBox, QScrollArea, QTextEdit, QHBoxLayout, QLineEdit, \
+    QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtCore import Qt
 import fitz
+from PIL import Image
 
-class PDFPreviewer(QMainWindow): # Define a class named PDFPreviewer which inherits from QMainWindow.
-    def __init__(self): # Define the constructor method for the PDFPreviewer class.
-        super().__init__() # Call the constructor of the superclass (QMainWindow).
+class PDFPreviewer(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-        # Create the main window and its central widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
-        # Create a layout for the central widget
         layout = QVBoxLayout(central_widget)
-        layout.setContentsMargins(100, 100, 100, 100)  # Set margins for the layout
+        layout.setContentsMargins(100, 100, 100, 100)
 
-        # Create a button to open a PDF file
         self.btn_open = QPushButton("Open PDF")
-        self.btn_open.clicked.connect(self.open_pdf)  # Connect the button click event to the open_pdf method
-
-        # Create a scroll area to contain the PDF page labels
+        self.btn_open.clicked.connect(self.open_pdf)
+        
         self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)  # Allow the scroll area widget to resize
+        self.scroll_area.setWidgetResizable(True)
 
-        # Create a widget to serve as the contents of the scroll area
         self.scroll_widget = QWidget()
-        self.scroll_layout = QVBoxLayout(self.scroll_widget)  # Create a layout for the scroll widget
-        self.scroll_area.setWidget(self.scroll_widget)  # Set the scroll widget as the content of the scroll area
+        self.scroll_layout = QVBoxLayout(self.scroll_widget)
+        self.scroll_area.setWidget(self.scroll_widget)
 
-        # Create widgets for comment functionality
-        self.comment_text_edit = QTextEdit()
-        self.points_edit = QLineEdit()
-        self.add_comment_button = QPushButton("Add Comment")
-        self.add_comment_button.clicked.connect(self.add_comment)
-
-        # Add the button to save comments to a file
-        self.save_comments_button = QPushButton("Save Comments")
-        self.save_comments_button.clicked.connect(self.save_comments_to_file)
-
-        # Add the button and the scroll area to the layout of the central widget
         layout.addWidget(self.btn_open)
         layout.addWidget(self.scroll_area)
 
+        # Set a fixed size for the main window
+        self.setMinimumSize(850, 900)  # Adjust the size as needed
+        
+        # Create button to upload answers
+        self.upload_answer_button = QPushButton("Upload Answers")
+        self.upload_answer_button.clicked.connect(self.upload_answers)
+
+        # Add the answer widgets
+        layout.addWidget(self.upload_answer_button)
+
+        # Create a table widget to display the comments and points
+        self.comment_table = QTableWidget()
+        self.comment_table.setColumnCount(2)
+        self.comment_table.setHorizontalHeaderLabels(["Comment", "Points"])
+        self.comment_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        # Add the table widget to the layout
+        layout.addWidget(self.comment_table)
+
+        # Create a layout for the comment and points fields
+        comment_layout = QHBoxLayout()
+
+        # Create a smaller QTextEdit for the comments box
+        self.comment_text_edit = QTextEdit()
+        self.comment_text_edit.setFixedHeight(30)
+        comment_layout.addWidget(self.comment_text_edit)
+
+        # Create a smaller QLineEdit for the points box
+        self.points_edit = QLineEdit()
+        self.points_edit.setFixedWidth(30)
+        self.points_edit.setFixedHeight(30)
+        comment_layout.addWidget(self.points_edit)
+
+        # Create a smaller ADD button to add the comments and points to a list
+        self.add_comment_button = QPushButton("Add")
+        self.add_comment_button.setFixedWidth(40)
+        self.add_comment_button.setFixedHeight(30)
+        self.add_comment_button.clicked.connect(self.add_comment)
+        comment_layout.addWidget(self.add_comment_button)
+
+        # Add the layout to the main layout
+        layout.addLayout(comment_layout)
+
+        # Add the button to save comments to a file
+        self.save_comments_button = QPushButton("EXPORT")
+        self.save_comments_button.clicked.connect(self.save_comments_to_file)
+
         # Add the comment widgets
-        layout.addWidget(self.comment_text_edit)
-        layout.addWidget(self.points_edit)
-        layout.addWidget(self.add_comment_button)
         layout.addWidget(self.save_comments_button)
         layout.addWidget(self.scroll_area)
 
@@ -55,66 +90,101 @@ class PDFPreviewer(QMainWindow): # Define a class named PDFPreviewer which inher
         self.comments = []
 
     def open_pdf(self):
-        # Open a file dialog to select a PDF file
         file_path, _ = QFileDialog.getOpenFileName(self, "Open PDF File", "", "PDF Files (*.pdf)")
-        
+
         if file_path:
             try:
-                # Open the PDF document
-                doc = fitz.open(file_path)
-                page_count = doc.page_count  # Get the number of pages in the PDF
+                pdf_document = fitz.open(file_path)
 
-                # Clear any previous content from the scroll layout
                 self.clear_scroll_layout()
-                self.comments.clear()
 
-                # Display each page of the PDF as an image in the scroll area
-                for page_number in range(page_count):
-                    pixmap = doc[page_number].get_pixmap()  # Get the pixmap for the current page
+                for page_number in range(pdf_document.page_count):
+                    page = pdf_document[page_number]
                     
-                    if not pixmap:
-                        print("Pixmap is None for page", page_number)
-                        continue  # Skip to the next page if the pixmap is None
+                    # Print the text on the page
+                    text = page.get_text("text")
+                    print(f"Page {page_number + 1}:\n{text}\n")
+
+                    # Display the page as an image
+                    pix = page.get_pixmap()
+                    image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
                     
-                    # Convert the pixmap to QImage
-                    q_image = QImage(pixmap.tobytes(), pixmap.width, pixmap.height, QImage.Format_RGB888)
-                    
+                    # Convert the image to QImage
+                    q_image = QImage(image.tobytes(), image.width, image.height, QImage.Format_RGB888)
+
                     if q_image.isNull():
                         print("QImage is null for page", page_number)
                         continue  # Skip to the next page if the QImage is null
-                    
+
                     # Convert QImage to QPixmap
                     q_pixmap = QPixmap.fromImage(q_image)
-                    
+
                     if q_pixmap.isNull():
                         print("QPixmap is null for page", page_number)
                         continue  # Skip to the next page if the QPixmap is null
-                    
+
                     # Create a QLabel to display the QPixmap
                     image_label = QLabel()
                     image_label.setPixmap(q_pixmap)
-                    self.scroll_layout.addWidget(image_label)  # Add image label to the scroll layout
+                    self.scroll_layout.addWidget(image_label)
 
-                doc.close()  # Close the PDF document
+                pdf_document.close()
             except Exception as e:
-                print('check')
+                print(f"An error occurred: {str(e)}")
                 QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
+    
+    # Allows user to upload a txt file containing comments and points
+    # Assumes the format that the first line contains the comment and the second line is the 
+    # number of points lost
+    def upload_answers(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Answer File", "", "Text Files (*.txt)")
+
+        if file_path:
+            try:
+                answers = []
+                points = []
+
+                # Open text file
+                with open(file_path, 'r') as file:
+                    lines = file.readlines()
+
+                    # Iterate through lines and process answers and points
+                    for i in range(0, len(lines), 2):
+                        answers.append(lines[i].strip())
+                        points.append(int(lines[i + 1].strip()))
+
+                # Output answers and points to check list contents
+                print("Answers:", answers)
+                print("Points:", points)
+
+            except Exception as e:
+                print(f"An error occurred: {str(e)}")
+                QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
+        
 
     def clear_scroll_layout(self):
-        # Clear all widgets from the scroll layout
         while self.scroll_layout.count():
             child = self.scroll_layout.takeAt(0)
             if child.widget():
-                child.widget().deleteLater()  # Delete the widget and free its memory
-
+                child.widget().deleteLater()
+    
     def add_comment(self):
         # Allow a comment to be added and points deducted
         comment_text = self.comment_text_edit.toPlainText()
         points_text = self.points_edit.text()
-        self.comments.append((comment_text, str(points_text)))
+        
+        # Append comment and points to the comments list
+        self.comments.append((comment_text, points_text))
+        
+        # Add the comment and points to the widget table
+        row_position = self.comment_table.rowCount()
+        self.comment_table.insertRow(row_position)
+        self.comment_table.setItem(row_position, 0, QTableWidgetItem(comment_text))
+        self.comment_table.setItem(row_position, 1, QTableWidgetItem(points_text))
+
+        # Clear the comment and points fields
         self.comment_text_edit.clear()
         self.points_edit.clear()
-        print("Comment added: ", comment_text, "| Points Deducted: ", points_text)
 
     def save_comments_to_file(self):
         file_path, _ = QFileDialog.getSaveFileName(self, "Save Comments", "", "Text Files (*.txt)")
@@ -126,6 +196,7 @@ class PDFPreviewer(QMainWindow): # Define a class named PDFPreviewer which inher
                 QMessageBox.information(self, "Success", "Your comments were saved successfully!")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"An error occured while saving your comments: {str(e)}")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
