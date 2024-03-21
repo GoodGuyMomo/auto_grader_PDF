@@ -14,17 +14,8 @@ Welcome to our PDF team GitHub repository! This space will be used for sharing c
 ## Weekly Updates
 - Every **Thursday** night, the project manager will gather all changes made by each team member and merge them into the master document. The main branch will be updated accordingly.
 
-## Weekly Tasks (2/25 - 2/29)
+## Weekly Tasks - moved to goog sheets in discrod
 *Sunday - Thursday*
-
-| Task Name | Assignees | Description |
-|-------------|-------------|-------------|
-| GUI Enhancement | Luke | Enhance the appearance of the GUI, have the first page only for the upload buttons (1 for PDF, 1 for Answers, 1 for creating answers), exit button, and back button on the second screen |
-| GUI Efficiency | Mo | Update the UI so that the PDF is previewed on a second screen |
-| Comments Editing | Kevin | Update the UI so the comments appear on the GUI and the number of points taken off are recorded separately |
-| PDF Styling | Alex | Create a button for the user to upload their "answers" to |
-| Comments Display | David | Update the UI so that any pre-uploaded "answers" are displayed on the second screen on the UI |
-| GUI Useability | Harkiran | Create a "tools" area where the comments and box creation buttons can stay. |
 
 Please feel free to reach out if you have any questions or need assistance!
 
