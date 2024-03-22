@@ -14,19 +14,25 @@ Welcome to our PDF team GitHub repository! This space will be used for sharing c
 ## Weekly Updates
 - Every **Thursday** night, the project manager will gather all changes made by each team member and merge them into the master document. The main branch will be updated accordingly.
 
-## Weekly Tasks - moved to goog sheets in discrod
-*Sunday - Thursday*
+## Formatting an Answer File to Upload
+
+The answer file must be a .txt file in order for the program to accept it.
+When creating the answer file, it has to be formatted in the following manner:
+
+Comment
+Number of Points Deducted
+Comment
+Number of Points Deducted
+
+**Example of a Correctly Formatted Answer File:**
+
+Wrong spelling
+2
+Incorrect formula used
+2
+Incorrect output
+5
 
 Please feel free to reach out if you have any questions or need assistance!
 
 Happy coding!
-
-
-
-# Want to learn how to Push/Pull instead of copying code?
-Watch this tutorial on how to install GitHub Desktop and clone a repo locally: https://www.youtube.com/watch?v=iv8rSLsi1xo&t=19s
-| Content | Time Stamp |
-|---------|------------|
-|Installing GitHub Desktop| 3:23 |
-| Cloning a Repo (Locally) | 3:45 |
-|Committing new changes| 5:03 |
