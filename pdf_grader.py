@@ -34,6 +34,7 @@ class MainPage(QMainWindow):
         
         # Create button to upload answers
         self.btn_answer_upload = QPushButton("Upload Answers")
+        # Upon being clicked, the upload_answers function is run
         self.btn_answer_upload.clicked.connect(self.upload_answers)
         layout.addWidget(self.btn_answer_upload, 4, 0)
 
@@ -62,14 +63,22 @@ class MainPage(QMainWindow):
     def add_space(self, l, y, x):
         l.addWidget(QLabel(""), y, x)
 
+    # Allows a user to upload a PDF file to the program
     def upload_pdf(self):
+        
+        # Gets the file path of the PDF file
         file_path, _ = QFileDialog.getOpenFileName(self, "Open PDF File", "", "PDF Files (*.pdf)")
         if file_path:
+            # Displays the file path in the textbox
             self.lbl_pdf.setText(file_path)
         
+    # Allows a user to select a .txt answer file to upload into the program
     def upload_answers(self):
+        
+        # Gets the filepath of the answer file
         file_path, _ = QFileDialog.getOpenFileName(self, "Open Answer File", "", "Text Files (*.txt)")
         if file_path:
+            # Displays the file path in the textbox
             self.lbl_answer_upload.setText(file_path)
             self.lbl_answer_create.setText("")
 
