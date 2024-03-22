@@ -2,7 +2,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QDialog, \
     QLabel, QVBoxLayout, QWidget, QMessageBox, QScrollArea, QTextEdit, QHBoxLayout, QLineEdit, \
-        QGridLayout
+        QGridLayout, QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt5.QtGui import QPixmap, QImage, QFont
 from PyQt5.QtCore import Qt
 import fitz
@@ -130,6 +130,79 @@ class SecondPage(QWidget):
         # Set a fixed size for the main window
         self.setMinimumSize(850, 900)  # Adjust the size as needed
         
+        # KEVINS ADDED CODE
+        
+        # Create a table widget to display the comments, points, and question numbers
+        self.comment_table = QTableWidget()
+        self.comment_table.setColumnCount(3)
+        self.comment_table.setHorizontalHeaderLabels(["Question #:", "Comment:", "Points Deducted:"])
+        
+        # Hide the row numbers from the left of the comment table
+        self.comment_table.verticalHeader().setVisible(False)
+
+        # Set the header to be stretched and fill the table completely
+        self.comment_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        # Set the size of each column to make the comments section the biggest
+        for column in range(self.comment_table.columnCount()):
+            if column == 0 or column == 2: # Question column or points column
+                self.comment_table.horizontalHeader().setSectionResizeMode(column, QHeaderView.ResizeToContents)
+            else:
+                self.comment_table.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
+
+        # Add the table widget to the layout
+        layout.addWidget(self.comment_table, 1, 0, 1, 3)
+
+        # Create a layout for the comment, points, and question fields
+        comment_layout = QHBoxLayout()
+        
+        # Create a QLineEdit for the questions box
+        self.questions_edit = QLineEdit()
+        self.questions_edit.setFixedWidth(50)
+        self.questions_edit.setFixedHeight(30)
+        comment_layout.addWidget(self.questions_edit)
+
+        # Create a QTextEdit for the comments box
+        self.comment_text_edit = QTextEdit()
+        self.comment_text_edit.setFixedHeight(30)
+        comment_layout.addWidget(self.comment_text_edit)
+        
+        # Create a QLineEdit for the points box
+        self.points_edit = QLineEdit()
+        self.points_edit.setFixedWidth(50)
+        self.points_edit.setFixedHeight(30)
+        comment_layout.addWidget(self.points_edit)
+
+        # Create a smaller ADD button to add the comments, points, and question number to a list
+        self.add_comment_button = QPushButton("Add")
+        self.add_comment_button.setFixedWidth(80)
+        self.add_comment_button.setFixedHeight(30)
+        self.add_comment_button.clicked.connect(self.add_comment)
+        comment_layout.addWidget(self.add_comment_button)
+
+        # Add the layout to the main layout
+        layout.addLayout(comment_layout, 2, 0, 1, 3)
+
+        # Add the button to save comments to a file and export
+        self.save_comments_button = QPushButton("Export")
+        self.save_comments_button.clicked.connect(self.save_comments_to_file)
+
+        # Add the comment and scroll widgets
+        layout.addWidget(self.save_comments_button, 3, 0, 1, 3)
+        layout.addWidget(self.scroll_area, 4, 0, 1, 3)
+        
+        # Create button to upload answers
+        self.upload_answer_button = QPushButton("Upload Answers")
+        self.upload_answer_button.clicked.connect(self.upload_answers)
+        
+        # Add the answer widgets
+        layout.addWidget(self.upload_answer_button, 5, 0, 1, 3)
+
+        # Store the comments in a list
+        self.comments = []
+
+        # KEVINS ENDED CODE
+
         # NEW CODE DJF
         
         self.answers_display = QTextEdit()
@@ -148,37 +221,9 @@ class SecondPage(QWidget):
         self.answers_display.setFont(QFont("Arial", 12))
         print("TextEdit size:", self.answers_display.size())
         print("TextEdit visibility:", self.answers_display.isVisible())
-        layout.addWidget(self.answers_display, 1, 2)  # Add the answers_display to the layout
+        layout.addWidget(self.answers_display, 6, 0, 1, 3)  # Add the answers_display to the layout
 
         # NEW CODE DJF END
-        
-        # Create widgets for comment functionality
-        self.comment_text_edit = QTextEdit()
-        self.points_edit = QLineEdit()
-        self.add_comment_button = QPushButton("Add Comment")
-        self.add_comment_button.clicked.connect(self.add_comment)
-        
-        # Add the button to save comments to a file
-        self.save_comments_button = QPushButton("Save Comments")
-        self.save_comments_button.clicked.connect(self.save_comments_to_file)
-        
-        # Add the comment widgets
-        layout.addWidget(self.comment_text_edit, 0, 0)
-        layout.addWidget(self.points_edit, 1, 0)
-        layout.addWidget(self.add_comment_button, 2, 0)
-        layout.addWidget(self.save_comments_button, 3, 0)
-        layout.addWidget(self.scroll_area, 4, 0)
-        
-        # Create button to upload answers
-        self.upload_answer_button = QPushButton("Upload Answers")
-        self.upload_answer_button.clicked.connect(self.upload_answers)
-        
-        # Add the answer widgets
-        layout.addWidget(self.upload_answer_button)
-
-        # Store the comments in a list
-        #self.comments = []
-
     
         file_path = pdf_path
         if file_path:
@@ -257,22 +302,36 @@ class SecondPage(QWidget):
             if child.widget():
                 child.widget().deleteLater()
     
+    # KEVIN UPDATED THIS FUNCTION
     def add_comment(self):
-        # Allow a comment to be added and points deducted
+        # Allow a comment and question to be added and points deducted
         comment_text = self.comment_text_edit.toPlainText()
         points_text = self.points_edit.text()
-        self.comments.append((comment_text, str(points_text)))
+        questions_text = self.questions_edit.text()
+        
+        # Append the question, comment, and points to the comments list
+        self.comments.append((questions_text, comment_text, points_text))
+        
+        # Add the question, comment, and points to the widget table
+        row_position = self.comment_table.rowCount()
+        self.comment_table.insertRow(row_position)
+        self.comment_table.setItem(row_position, 0, QTableWidgetItem(questions_text))
+        self.comment_table.setItem(row_position, 1, QTableWidgetItem(comment_text))
+        self.comment_table.setItem(row_position, 2, QTableWidgetItem(points_text))
+
+        # Clear the comment and points fields
+        self.questions_edit.clear()
         self.comment_text_edit.clear()
         self.points_edit.clear()
-        print("Comment added: ", comment_text, "| Points Deducted: ", points_text)
 
+    # KEVIN UPDATED THIS FUNCTION
     def save_comments_to_file(self):
         file_path, _ = QFileDialog.getSaveFileName(self, "Save Comments", "", "Text Files (*.txt)")
         if file_path:
             try:
                 with open(file_path, 'w') as file:
-                    for comment, points in self.comments:
-                        file.write(f"Comment: {comment}\tPoints: {points}\n")
+                    for question, comment, points in self.comments:
+                        file.write(f"Question #: {question}\nComment: {comment}\nPoints Deducted: {points}\n\n")
                 QMessageBox.information(self, "Success", "Your comments were saved successfully!")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"An error occured while saving your comments: {str(e)}")
