@@ -3,7 +3,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QDialog, \
     QLabel, QVBoxLayout, QWidget, QMessageBox, QScrollArea, QTextEdit, QHBoxLayout, QLineEdit, \
         QGridLayout
-from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtGui import QPixmap, QImage, QFont
 from PyQt5.QtCore import Qt
 import fitz
 from PIL import Image
@@ -92,14 +92,19 @@ class MainPage(QMainWindow):
         upload = self.lbl_answer_upload.text()
         create = self.lbl_answer_create.text()
 
-        if pdf == "":
-            QMessageBox.critical(self, "Error", "Please upload a PDF document")
-        elif upload == "" and create == "":
-            QMessageBox.critical(self, "Error", "Please upload or create an answer document")
-        else:
-            ans = self.lbl_answer_upload.text()
-            if ans == "":
-                ans = self.lbl_answer_create.text()
+        if pdf == "": 
+            QMessageBox.critical(self, "Error", "Please upload a PDF document") 
+        elif upload == "" and create == "": 
+            QMessageBox.critical(self, "Error", "Please upload or create an answer document") 
+        else: 
+            ans = self.lbl_answer_upload.text() 
+            if ans == "": 
+                ans = self.lbl_answer_create.text() 
+            if upload:
+                with open(upload, 'r') as file:
+                    ans = file.read()
+                print("Loaded answers:", ans)  # Debug print
+                 
             
             next_page = SecondPage(pdf, ans)
             self.setCentralWidget(next_page)
@@ -124,7 +129,29 @@ class SecondPage(QWidget):
 
         # Set a fixed size for the main window
         self.setMinimumSize(850, 900)  # Adjust the size as needed
-               
+        
+        # NEW CODE DJF
+        
+        self.answers_display = QTextEdit()
+        self.answers_display.setReadOnly(True)
+
+        # Using !important to ensure these styles take precedence
+        self.answers_display.setStyleSheet("QTextEdit {color: black; background-color: #f0f0f0;}")
+    
+        # Setting text color directly using QPalette
+        #palette = self.answers_display.palette()
+        #palette.setColor(QPalette.Text, Qt.black)
+        #self.answers_display.setPalette(palette)
+    
+        #self.answers_display.setText(answers)  # Display the answers
+        self.answers_display.setPlainText(answers)
+        self.answers_display.setFont(QFont("Arial", 12))
+        print("TextEdit size:", self.answers_display.size())
+        print("TextEdit visibility:", self.answers_display.isVisible())
+        layout.addWidget(self.answers_display, 1, 2)  # Add the answers_display to the layout
+
+        # NEW CODE DJF END
+        
         # Create widgets for comment functionality
         self.comment_text_edit = QTextEdit()
         self.points_edit = QLineEdit()
