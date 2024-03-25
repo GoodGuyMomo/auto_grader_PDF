@@ -7,6 +7,7 @@ from PyQt5.QtGui import QPixmap, QImage, QFont
 from PyQt5.QtCore import Qt
 import fitz
 from PIL import Image
+from PyQt5.QtWidgets import QCheckBox, QTableWidgetItem
 
 class MainPage(QMainWindow):
     def __init__(self):
@@ -132,10 +133,10 @@ class SecondPage(QWidget):
         
         # KEVINS ADDED CODE
         
-        # Create a table widget to display the comments, points, and question numbers
+        # Create a table widget to display the export option, comments, points, and question numbers
         self.comment_table = QTableWidget()
-        self.comment_table.setColumnCount(3)
-        self.comment_table.setHorizontalHeaderLabels(["Question #:", "Comment:", "Points Deducted:"])
+        self.comment_table.setColumnCount(4)
+        self.comment_table.setHorizontalHeaderLabels(["Export", "Question #:", "Comment:", "Points Deducted:"])
         
         # Hide the row numbers from the left of the comment table
         self.comment_table.verticalHeader().setVisible(False)
@@ -145,7 +146,7 @@ class SecondPage(QWidget):
 
         # Set the size of each column to make the comments section the biggest
         for column in range(self.comment_table.columnCount()):
-            if column == 0 or column == 2: # Question column or points column
+            if column == 1 or column == 3: # Question column or points column
                 self.comment_table.horizontalHeader().setSectionResizeMode(column, QHeaderView.ResizeToContents)
             else:
                 self.comment_table.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
@@ -156,22 +157,36 @@ class SecondPage(QWidget):
         # Create a layout for the comment, points, and question fields
         comment_layout = QHBoxLayout()
         
+        # Create a QLabel for the questions box
+        self.questions_label = QLabel("Question:")
+        comment_layout.addWidget(self.questions_label)
+        
         # Create a QLineEdit for the questions box
         self.questions_edit = QLineEdit()
         self.questions_edit.setFixedWidth(50)
         self.questions_edit.setFixedHeight(30)
         comment_layout.addWidget(self.questions_edit)
 
+
+       # Create a QLabel for the comments box
+        self.comment_label = QLabel("Comments:")
+        comment_layout.addWidget(self.comment_label)
+        
         # Create a QTextEdit for the comments box
         self.comment_text_edit = QTextEdit()
         self.comment_text_edit.setFixedHeight(30)
         comment_layout.addWidget(self.comment_text_edit)
+        
+        # Create a QLabel for the points box
+        self.points_label = QLabel("Points:")
+        comment_layout.addWidget(self.points_label)
         
         # Create a QLineEdit for the points box
         self.points_edit = QLineEdit()
         self.points_edit.setFixedWidth(50)
         self.points_edit.setFixedHeight(30)
         comment_layout.addWidget(self.points_edit)
+
 
         # Create a smaller ADD button to add the comments, points, and question number to a list
         self.add_comment_button = QPushButton("Add")
@@ -302,41 +317,70 @@ class SecondPage(QWidget):
             if child.widget():
                 child.widget().deleteLater()
     
+    def add_checkboxes_to_table(self):
+        # Add checkboxes to the first column of the table widget
+        for row in range(self.comment_table.rowCount()):
+            checkbox = QCheckBox()
+            self.comment_table.setCellWidget(row, 0, checkbox)
+
     # KEVIN UPDATED THIS FUNCTION
     def add_comment(self):
         # Allow a comment and question to be added and points deducted
         comment_text = self.comment_text_edit.toPlainText()
         points_text = self.points_edit.text()
         questions_text = self.questions_edit.text()
-        
+    
         # Append the question, comment, and points to the comments list
         self.comments.append((questions_text, comment_text, points_text))
-        
-        # Add the question, comment, and points to the widget table
+    
+        # Add a new row to the table widget
         row_position = self.comment_table.rowCount()
         self.comment_table.insertRow(row_position)
-        self.comment_table.setItem(row_position, 0, QTableWidgetItem(questions_text))
-        self.comment_table.setItem(row_position, 1, QTableWidgetItem(comment_text))
-        self.comment_table.setItem(row_position, 2, QTableWidgetItem(points_text))
-
+    
+        # Add a checkbox to the first column of the new row
+        checkbox = QCheckBox()
+        checkbox_layout = QHBoxLayout()  # Set layout for the checkbox
+        checkbox_layout.addWidget(checkbox, alignment=Qt.AlignCenter)  # Add checkbox to the layout
+        checkbox_layout.setContentsMargins(0, 0, 0, 0)  # Set layout margins
+        cell_widget = QWidget()  # Create a widget to hold the checkbox
+        cell_widget.setLayout(checkbox_layout)  # Set layout for the widget
+        self.comment_table.setCellWidget(row_position, 0, cell_widget)  # Set widget in the table cell
+    
+        # Add the question, comment, and points to the appropriate columns
+        self.comment_table.setItem(row_position, 1, QTableWidgetItem(questions_text))
+        self.comment_table.setItem(row_position, 2, QTableWidgetItem(comment_text))
+        self.comment_table.setItem(row_position, 3, QTableWidgetItem(points_text))
+    
         # Clear the comment and points fields
         self.questions_edit.clear()
         self.comment_text_edit.clear()
         self.points_edit.clear()
 
+
+
     # KEVIN UPDATED THIS FUNCTION
+    # Exports the checked rows into a file
     def save_comments_to_file(self):
+        # Allows the user to choose where to save the file and what to name it
         file_path, _ = QFileDialog.getSaveFileName(self, "Save Comments", "", "Text Files (*.txt)")
         if file_path:
             try:
                 with open(file_path, 'w') as file:
-                    for question, comment, points in self.comments:
-                        file.write(f"Question #: {question}\nComment: {comment}\nPoints Deducted: {points}\n\n")
-                QMessageBox.information(self, "Success", "Your comments were saved successfully!")
+                    # Checks which rows are checked and will be included in the export
+                    for row in range(self.comment_table.rowCount()):
+                        checkbox_item = self.comment_table.cellWidget(row, 0)
+                        if isinstance(checkbox_item, QWidget):  # Check if the cell contains a widget
+                            checkbox_layout = checkbox_item.layout()
+                            checkbox = checkbox_layout.itemAt(0).widget()  # Get the checkbox from the layout
+                            if checkbox.isChecked():
+                                question = self.comment_table.item(row, 1).text()
+                                comment = self.comment_table.item(row, 2).text()
+                                points = self.comment_table.item(row, 3).text()
+                                file.write(f"Question #: {question}\nComment: {comment}\nPoints Deducted: {points}\n\n")
+                QMessageBox.information(self, "Success", "Your selected comments were saved successfully!")
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"An error occured while saving your comments: {str(e)}")
+                QMessageBox.critical(self, "Error", f"An error occurred while saving your comments: {str(e)}")
         
-    
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
