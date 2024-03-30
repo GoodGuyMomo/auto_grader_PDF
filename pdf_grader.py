@@ -31,7 +31,7 @@ class MainPage(QMainWindow):
         self.add_space(layout, 2, 1)
 
         # Set a fixed size for the main window
-        self.setMinimumSize(850, 900)  # Adjust the size as need
+        self.setMinimumSize(1900, 1200)  # Adjust the size as need
         
         # Create button to upload answers
         self.btn_answer_upload = QPushButton("Upload Answers")
@@ -119,30 +119,25 @@ class SecondPage(QWidget):
         layout = QGridLayout(self)
         layout.setContentsMargins(100, 100, 100, 100)
 
+        #PDF view area --------------------------------------------------------
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
-
         self.scroll_widget = QWidget()
         self.scroll_layout = QVBoxLayout(self.scroll_widget)
         self.scroll_area.setWidget(self.scroll_widget)
-
-        layout.addWidget(self.scroll_area)
+        layout.addWidget(self.scroll_area, 1, 1, 8, 1)
+        #----------------------------------------------------------------------
 
         # Set a fixed size for the main window
-        self.setMinimumSize(850, 900)  # Adjust the size as needed
+        self.setMinimumSize(1900, 1200)  # Adjust the size as needed
         
-        # KEVINS ADDED CODE
         
-        # Create a table widget to display the export option, comments, points, and question numbers
+        # Comments preview table ----------------------------------------------
         self.comment_table = QTableWidget()
         self.comment_table.setColumnCount(4)
         self.comment_table.setHorizontalHeaderLabels(["Export", "Question #:", "Comment:", "Points Deducted:"])
-        
-        # Hide the row numbers from the left of the comment table
-        self.comment_table.verticalHeader().setVisible(False)
-
-        # Set the header to be stretched and fill the table completely
-        self.comment_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.comment_table.verticalHeader().setVisible(False) # Hide the row numbers from the left of the comment table
+        self.comment_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch) # Set the header to be stretched and fill the table completely
 
         # Set the size of each column to make the comments section the biggest
         for column in range(self.comment_table.columnCount()):
@@ -152,74 +147,63 @@ class SecondPage(QWidget):
                 self.comment_table.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
 
         # Add the table widget to the layout
-        layout.addWidget(self.comment_table, 1, 0, 1, 3)
+        layout.addWidget(self.comment_table, 1, 3, 4, 1) #row 1, column 3, spanning 5 rows and 1 coulmn
+        #----------------------------------------------------------------------
 
-        # Create a layout for the comment, points, and question fields
-        comment_layout = QHBoxLayout()
-        
-        # Create a QLabel for the questions box
-        self.questions_label = QLabel("Question:")
-        comment_layout.addWidget(self.questions_label)
-        
-        # Create a QLineEdit for the questions box
-        self.questions_edit = QLineEdit()
-        self.questions_edit.setFixedWidth(50)
-        self.questions_edit.setFixedHeight(30)
-        comment_layout.addWidget(self.questions_edit)
-
-
-       # Create a QLabel for the comments box
-        self.comment_label = QLabel("Comments:")
-        comment_layout.addWidget(self.comment_label)
-        
-        # Create a QTextEdit for the comments box
-        self.comment_text_edit = QTextEdit()
-        self.comment_text_edit.setFixedHeight(30)
-        comment_layout.addWidget(self.comment_text_edit)
-        
-        # Create a QLabel for the points box
-        self.points_label = QLabel("Points:")
-        comment_layout.addWidget(self.points_label)
-        
-        # Create a QLineEdit for the points box
-        self.points_edit = QLineEdit()
-        self.points_edit.setFixedWidth(50)
-        self.points_edit.setFixedHeight(30)
-        comment_layout.addWidget(self.points_edit)
-
-
-        # Create a smaller ADD button to add the comments, points, and question number to a list
-        self.add_comment_button = QPushButton("Add")
-        self.add_comment_button.setFixedWidth(80)
-        self.add_comment_button.setFixedHeight(30)
-        self.add_comment_button.clicked.connect(self.add_comment)
-        comment_layout.addWidget(self.add_comment_button)
-
-        # Add the layout to the main layout
-        layout.addLayout(comment_layout, 2, 0, 1, 3)
-
-        # Add the button to save comments to a file and export
+        # Export Button
         self.save_comments_button = QPushButton("Export")
         self.save_comments_button.clicked.connect(self.save_comments_to_file)
+        layout.addWidget(self.save_comments_button, 5, 3, 1, 1)
+        
 
-        # Add the comment and scroll widgets
-        layout.addWidget(self.save_comments_button, 3, 0, 1, 3)
-        layout.addWidget(self.scroll_area, 4, 0, 1, 3)
+        # Adding comments area ------------------------------------------------
+        comment_layout = QHBoxLayout()
+        layout.setSpacing(5)
         
-        # Create button to upload answers
-        self.upload_answer_button = QPushButton("Upload Answers")
-        self.upload_answer_button.clicked.connect(self.upload_answers)
+        # QUESTION LABEL
+        self.questions_label = QLabel("Question #:")
+        comment_layout.addWidget(self.questions_label)
+        # QUESTION BOX
+        self.questions_edit = QLineEdit()
+        self.questions_edit.setFixedWidth(50)
+        self.questions_edit.setFixedHeight(50)
+        comment_layout.addWidget(self.questions_edit)
         
-        # Add the answer widgets
-        layout.addWidget(self.upload_answer_button, 5, 0, 1, 3)
+        # POINT LABEL
+        self.points_label = QLabel("Points off:")
+        comment_layout.addWidget(self.points_label)
+        # POINT BOX
+        self.points_edit = QLineEdit()
+        self.points_edit.setFixedWidth(50)
+        self.points_edit.setFixedHeight(50)
+        comment_layout.addWidget(self.points_edit)
+        
+        # COMMENT LABEL
+        self.comment_label = QLabel("Comment:")
+        comment_layout.addWidget(self.comment_label)
+
+        # LAYOUT SETTINGS
+        layout.addLayout(comment_layout, 5, 3, 2, 1)
+        
+        # COMMENT LABEL
+        self.comment_text_edit = QTextEdit()
+        self.comment_text_edit.setFixedHeight(100)
+        layout.addWidget(self.comment_text_edit, 6, 3, 2, 1)
+        #----------------------------------------------------------------------
+
+        # ADD BUTTON
+        self.add_comment_button = QPushButton("Add")
+        #self.add_comment_button.setFixedWidth(80)
+        #self.add_comment_button.setFixedHeight(30)
+        self.add_comment_button.clicked.connect(self.add_comment)
+        layout.addWidget(self.add_comment_button, 8, 3, 1, 1)
+
 
         # Store the comments in a list
         self.comments = []
 
-        # KEVINS ENDED CODE
-
-        # NEW CODE DJF
-        
+        '''
+        NEED TO ADD THESE TO THE TABLE ABOVE
         self.answers_display = QTextEdit()
         self.answers_display.setReadOnly(True)
 
@@ -237,8 +221,7 @@ class SecondPage(QWidget):
         print("TextEdit size:", self.answers_display.size())
         print("TextEdit visibility:", self.answers_display.isVisible())
         layout.addWidget(self.answers_display, 6, 0, 1, 3)  # Add the answers_display to the layout
-
-        # NEW CODE DJF END
+        '''
     
         file_path = pdf_path
         if file_path:
