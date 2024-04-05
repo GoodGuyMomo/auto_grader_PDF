@@ -9,6 +9,9 @@ import fitz
 from PIL import Image
 from PyQt5.QtWidgets import QCheckBox, QTableWidgetItem
 
+# This class allows users to upload a PDF document.
+# The user can also upload or create anser documents.
+# After submission, the second page is displayed containing the PDF, allowing user to add comments and points.
 class MainPage(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -93,6 +96,7 @@ class MainPage(QMainWindow):
         upload = self.lbl_answer_upload.text()
         create = self.lbl_answer_create.text()
 
+        # Error checking for successful upload of the pdf and answer document.
         if pdf == "": 
             QMessageBox.critical(self, "Error", "Please upload a PDF document") 
         elif upload == "" and create == "": 
