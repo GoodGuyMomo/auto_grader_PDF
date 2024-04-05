@@ -3,11 +3,22 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QDialog, \
     QLabel, QVBoxLayout, QWidget, QMessageBox, QScrollArea, QTextEdit, QHBoxLayout, QLineEdit, \
         QGridLayout, QTableWidget, QTableWidgetItem, QHeaderView
-from PyQt5.QtGui import QPixmap, QImage, QFont
+from PyQt5.QtGui import QPixmap, QImage, QFont, QPainter
 from PyQt5.QtCore import Qt
 import fitz
 from PIL import Image
 from PyQt5.QtWidgets import QCheckBox, QTableWidgetItem
+
+
+class PicButton(QPushButton):
+    def __init__(self, img, parent=None):
+        super(PicButton, self).__init__(parent)
+        self.pixmap = QPixmap(img)
+        
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.drawPixmap(event.rect(), self.pixmap)
+    
 
 class MainPage(QMainWindow):
     def __init__(self):
@@ -16,53 +27,57 @@ class MainPage(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
-        layout = QGridLayout(central_widget)
-        layout.setContentsMargins(100, 100, 100, 100)
+        layout = QVBoxLayout(central_widget)
+        layout.setContentsMargins(100, 20, 100, 20)
+        self.setStyleSheet("background-color: grey")
 
-        self.btn_open = QPushButton("Open PDF")
+        self.img_splash = QPixmap("graphics/pdfGUI_welcomeBanner.png")
+        self.lbl_splash = QLabel()
+        self.lbl_splash.setPixmap(self.img_splash)
+        layout.addWidget(self.lbl_splash)
+
+        self.add_space(layout, 2)
+
+        self.btn_open = PicButton("graphics/pdfGUI_pdfButton.png")
         self.btn_open.clicked.connect(self.upload_pdf)
-        layout.addWidget(self.btn_open, 0, 1)
+        self.btn_open.setFixedSize(900, 150)
+        layout.addWidget(self.btn_open)
 
         self.lbl_pdf = QLabel("", self)
-        self.lbl_pdf.setStyleSheet("border: 1px solid black;")
-        self.lbl_pdf.adjustSize()
-        layout.addWidget(self.lbl_pdf, 1, 1)
+        self.lbl_pdf.setStyleSheet("border: 1px solid black; background-color: white;")
+        self.lbl_pdf.setFixedSize(900, 50)
+        layout.addWidget(self.lbl_pdf)
 
-        self.add_space(layout, 2, 1)
+        self.add_space(layout, 3)
 
         # Set a fixed size for the main window
         self.setMinimumSize(1000, 800)  # Adjust the size as need
         
         # Create button to upload answers
-        self.btn_answer_upload = QPushButton("Upload Answers")
+        self.btn_answer_upload = PicButton("graphics/pdfGUI_uploadButton.png")
         # Upon being clicked, the upload_answers function is run
         self.btn_answer_upload.clicked.connect(self.upload_answers)
-        layout.addWidget(self.btn_answer_upload, 4, 0)
+        self.btn_answer_upload.setFixedSize(900, 150)
+        layout.addWidget(self.btn_answer_upload)
 
         self.lbl_answer_upload = QLabel("", self)
-        self.lbl_answer_upload.setStyleSheet("border: 1px solid black;")
-        self.lbl_answer_upload.adjustSize()
-        layout.addWidget(self.lbl_answer_upload, 5, 0)
-
-        self.btn_answer_create = QPushButton("Create Answers")
-        self.btn_answer_create.clicked.connect(self.create_answers)
-        layout.addWidget(self.btn_answer_create, 4, 2)
+        self.lbl_answer_upload.setStyleSheet("border: 1px solid black; background-color: white;")
+        self.lbl_pdf.setFixedSize(900, 50)
+        layout.addWidget(self.lbl_answer_upload)
         
-        self.lbl_answer_create = QLabel("", self)
-        self.lbl_answer_create.setStyleSheet("border: 1px solid black;")
-        self.lbl_answer_create.adjustSize()
-        layout.addWidget(self.lbl_answer_create, 5, 2)
+        self.add_space(layout, 5)
         
-        self.add_space(layout, 6, 0)
-        self.add_space(layout, 6, 2)
-        
-        self.btn_submit = QPushButton("--- SUBMIT ---")
+        self.btn_submit = PicButton("graphics/pdfGUI_nextButton.png")
         self.btn_submit.clicked.connect(self.submit)
-        layout.addWidget(self.btn_submit, 7, 1)
+        self.btn_submit.setFixedSize(600, 100)
+        layout.addWidget(self.btn_submit, alignment=Qt.AlignCenter)
 
 
-    def add_space(self, l, y, x):
-        l.addWidget(QLabel(""), y, x)
+    def add_space(self, l, times):
+        for i in range(times):
+            ql = QLabel("")
+            ql.setFixedWidth(50)
+            l.addWidget(ql)
 
     # Allows a user to upload a PDF file to the program
     def upload_pdf(self):
@@ -81,31 +96,22 @@ class MainPage(QMainWindow):
         if file_path:
             # Displays the file path in the textbox
             self.lbl_answer_upload.setText(file_path)
-            self.lbl_answer_create.setText("")
-
-    def create_answers(self):
-        #INSERT FUNCTIONALITY HERE
-        self.lbl_answer_create.setText("Idk what goes here lmao")
-        self.lbl_answer_upload.setText("")
         
     def submit(self):
         pdf = self.lbl_pdf.text()
         upload = self.lbl_answer_upload.text()
-        create = self.lbl_answer_create.text()
 
         if pdf == "": 
             QMessageBox.critical(self, "Error", "Please upload a PDF document") 
-        elif upload == "" and create == "": 
-            QMessageBox.critical(self, "Error", "Please upload or create an answer document") 
-        else: 
-            ans = self.lbl_answer_upload.text() 
-            if ans == "": 
-                ans = self.lbl_answer_create.text() 
-            if upload:
-                with open(upload, 'r') as file:
-                    ans = file.read()
-                print("Loaded answers:", ans)  # Debug print
-                 
+        elif upload == "": 
+            QMessageBox.critical(self, "Error", "Please upload an answer document") 
+        else:  
+            with open(upload, 'r') as file:
+                ans = file.read()
+            print("Loaded answers:", ans)  # Debug print
+             
+            self.setStyleSheet("background-color: ;")
+            #DELETE THE ABOVE LINE ONCE THE GRAPHICS ARE ADDED TO THE SECOND PAGE
             
             next_page = SecondPage(pdf, ans)
             self.setCentralWidget(next_page)
