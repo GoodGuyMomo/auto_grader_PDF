@@ -53,17 +53,17 @@ class MainPage(QMainWindow):
         # Set a fixed size for the main window
         self.setMinimumSize(1000, 800)  # Adjust the size as need
         
-        # Create button to upload answers
-        self.btn_answer_upload = PicButton("graphics/pdfGUI_uploadButton.png")
-        # Upon being clicked, the upload_answers function is run
-        self.btn_answer_upload.clicked.connect(self.upload_answers)
-        self.btn_answer_upload.setFixedSize(900, 150)
-        layout.addWidget(self.btn_answer_upload)
+        # Create button to upload comments
+        self.btn_comments_upload = PicButton("graphics/pdfGUI_uploadButton.png")
+        # Upon being clicked, the upload_comments function is run
+        self.btn_comments_upload.clicked.connect(self.upload_comments)
+        self.btn_comments_upload.setFixedSize(900, 150)
+        layout.addWidget(self.btn_comments_upload)
 
-        self.lbl_answer_upload = QLabel("", self)
-        self.lbl_answer_upload.setStyleSheet("border: 1px solid black; background-color: white;")
+        self.lbl_comments_upload = QLabel("", self)
+        self.lbl_comments_upload.setStyleSheet("border: 1px solid black; background-color: white;")
         self.lbl_pdf.setFixedSize(900, 50)
-        layout.addWidget(self.lbl_answer_upload)
+        layout.addWidget(self.lbl_comments_upload)
         
         self.add_space(layout, 5)
         
@@ -88,27 +88,27 @@ class MainPage(QMainWindow):
             # Displays the file path in the textbox
             self.lbl_pdf.setText(file_path)
         
-    # Allows a user to select a .txt answer file to upload into the program
-    def upload_answers(self):
+    # Allows a user to select a .txt comments file to upload into the program
+    def upload_comments(self):
         
-        # Gets the filepath of the answer file
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open Answer File", "", "Text Files (*.txt)")
+        # Gets the filepath of the comments file
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Comments File", "", "Text Files (*.txt)")
         if file_path:
             # Displays the file path in the textbox
-            self.lbl_answer_upload.setText(file_path)
+            self.lbl_comments_upload.setText(file_path)
         
     def submit(self):
         pdf = self.lbl_pdf.text()
-        upload = self.lbl_answer_upload.text()
+        upload = self.lbl_comments_upload.text()
 
         if pdf == "": 
             QMessageBox.critical(self, "Error", "Please upload a PDF document") 
         elif upload == "": 
-            QMessageBox.critical(self, "Error", "Please upload an answer document") 
+            QMessageBox.critical(self, "Error", "Please upload an comments document") 
         else:  
             with open(upload, 'r') as file:
                 ans = file.read()
-            print("Loaded answers:", ans)  # Debug print
+            print("Loaded comments:", ans)  # Debug print
              
             self.setStyleSheet("background-color: ;")
             #DELETE THE ABOVE LINE ONCE THE GRAPHICS ARE ADDED TO THE SECOND PAGE
@@ -117,7 +117,7 @@ class MainPage(QMainWindow):
             self.setCentralWidget(next_page)
             
 class SecondPage(QWidget):
-    def __init__(self, pdf_path, answers):
+    def __init__(self, pdf_path, comments):
         super().__init__()
 
         layout = QGridLayout(self)
@@ -204,23 +204,23 @@ class SecondPage(QWidget):
 
         '''
         NEED TO ADD THESE TO THE TABLE ABOVE
-        self.answers_display = QTextEdit()
-        self.answers_display.setReadOnly(True)
+        self.comments_display = QTextEdit()
+        self.comments_display.setReadOnly(True)
 
         # Using !important to ensure these styles take precedence
-        self.answers_display.setStyleSheet("QTextEdit {color: black; background-color: #f0f0f0;}")
+        self.comments_display.setStyleSheet("QTextEdit {color: black; background-color: #f0f0f0;}")
     
         # Setting text color directly using QPalette
-        #palette = self.answers_display.palette()
+        #palette = self.comments_display.palette()
         #palette.setColor(QPalette.Text, Qt.black)
-        #self.answers_display.setPalette(palette)
+        #self.comments_display.setPalette(palette)
     
-        #self.answers_display.setText(answers)  # Display the answers
-        self.answers_display.setPlainText(answers)
-        self.answers_display.setFont(QFont("Arial", 12))
-        print("TextEdit size:", self.answers_display.size())
-        print("TextEdit visibility:", self.answers_display.isVisible())
-        layout.addWidget(self.answers_display, 6, 0, 1, 3)  # Add the answers_display to the layout
+        #self.comments_display.setText(comments)  # Display the comments
+        self.comments_display.setPlainText(comments)
+        self.comments_display.setFont(QFont("Arial", 12))
+        print("TextEdit size:", self.comments_display.size())
+        print("TextEdit visibility:", self.comments_display.isVisible())
+        layout.addWidget(self.comments_display, 6, 0, 1, 3)  # Add the comments_display to the layout
         '''
     
         file_path = pdf_path
@@ -268,25 +268,25 @@ class SecondPage(QWidget):
     # Allows user to upload a txt file containing comments and points
     # Assumes the format that the first line contains the comment and the second line is the 
     # number of points lost
-    def upload_answers(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open Answer File", "", "Text Files (*.txt)")
+    def upload_comments(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Comments File", "", "Text Files (*.txt)")
 
         if file_path:
             try:
-                answers = []
+                comments = []
                 points = []
 
                 # Open text file
                 with open(file_path, 'r') as file:
                     lines = file.readlines()
 
-                    # Iterate through lines and process answers and points
+                    # Iterate through lines and process comments and points
                     for i in range(0, len(lines), 2):
-                        answers.append(lines[i].strip())
+                        comments.append(lines[i].strip())
                         points.append(int(lines[i + 1].strip()))
 
-                # Output answers and points to check list contents
-                print("Answers:", answers)
+                # Output comments and points to check list contents
+                print("Comments:", comments)
                 print("Points:", points)
 
             except Exception as e:
