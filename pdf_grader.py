@@ -31,7 +31,7 @@ class MainPage(QMainWindow):
         self.add_space(layout, 2, 1)
 
         # Set a fixed size for the main window
-        self.setMinimumSize(1900, 1200)  # Adjust the size as need
+        self.setMinimumSize(1000, 800)  # Adjust the size as need
         
         # Create button to upload answers
         self.btn_answer_upload = QPushButton("Upload Answers")
@@ -110,8 +110,6 @@ class MainPage(QMainWindow):
             next_page = SecondPage(pdf, ans)
             self.setCentralWidget(next_page)
             
-
-
 class SecondPage(QWidget):
     def __init__(self, pdf_path, answers):
         super().__init__()
@@ -129,7 +127,7 @@ class SecondPage(QWidget):
         #----------------------------------------------------------------------
 
         # Set a fixed size for the main window
-        self.setMinimumSize(1900, 1200)  # Adjust the size as needed
+        self.setMinimumSize(1000, 800)  # Adjust the size as needed
         
         
         # Comments preview table ----------------------------------------------
@@ -141,7 +139,7 @@ class SecondPage(QWidget):
 
         # Set the size of each column to make the comments section the biggest
         for column in range(self.comment_table.columnCount()):
-            if column == 1 or column == 3: # Question column or points column
+            if column == 0 or column == 1 or column == 3: # Question column or points column
                 self.comment_table.horizontalHeader().setSectionResizeMode(column, QHeaderView.ResizeToContents)
             else:
                 self.comment_table.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
@@ -153,9 +151,8 @@ class SecondPage(QWidget):
         # Export Button
         self.save_comments_button = QPushButton("Export")
         self.save_comments_button.clicked.connect(self.save_comments_to_file)
-        layout.addWidget(self.save_comments_button, 5, 3, 1, 1)
+        layout.addWidget(self.save_comments_button, 5, 3, 2, 1, alignment=Qt.AlignCenter)
         
-
         # Adding comments area ------------------------------------------------
         comment_layout = QHBoxLayout()
         layout.setSpacing(5)
@@ -165,39 +162,36 @@ class SecondPage(QWidget):
         comment_layout.addWidget(self.questions_label)
         # QUESTION BOX
         self.questions_edit = QLineEdit()
-        self.questions_edit.setFixedWidth(50)
-        self.questions_edit.setFixedHeight(50)
+        self.questions_edit.setFixedWidth(30)
+        self.questions_edit.setFixedHeight(25)
         comment_layout.addWidget(self.questions_edit)
+        
+        # COMMENT LABEL
+        self.comment_label = QLabel("Comment:")
+        comment_layout.addWidget(self.comment_label)
+        # COMMENT BOX
+        self.comment_text_edit = QTextEdit()
+        self.comment_text_edit.setFixedHeight(25)
+        comment_layout.addWidget(self.comment_text_edit)
         
         # POINT LABEL
         self.points_label = QLabel("Points off:")
         comment_layout.addWidget(self.points_label)
         # POINT BOX
         self.points_edit = QLineEdit()
-        self.points_edit.setFixedWidth(50)
-        self.points_edit.setFixedHeight(50)
+        self.points_edit.setFixedWidth(30)
+        self.points_edit.setFixedHeight(25)
         comment_layout.addWidget(self.points_edit)
         
-        # COMMENT LABEL
-        self.comment_label = QLabel("Comment:")
-        comment_layout.addWidget(self.comment_label)
-
-        # LAYOUT SETTINGS
-        layout.addLayout(comment_layout, 5, 3, 2, 1)
-        
-        # COMMENT LABEL
-        self.comment_text_edit = QTextEdit()
-        self.comment_text_edit.setFixedHeight(100)
-        layout.addWidget(self.comment_text_edit, 6, 3, 2, 1)
-        #----------------------------------------------------------------------
-
         # ADD BUTTON
         self.add_comment_button = QPushButton("Add")
-        #self.add_comment_button.setFixedWidth(80)
-        #self.add_comment_button.setFixedHeight(30)
+        self.add_comment_button.setFixedWidth(80)
+        self.add_comment_button.setFixedHeight(25)
         self.add_comment_button.clicked.connect(self.add_comment)
-        layout.addWidget(self.add_comment_button, 8, 3, 1, 1)
+        comment_layout.addWidget(self.add_comment_button)
 
+        # LAYOUT SETTINGS
+        layout.addLayout(comment_layout, 5, 3, 1, 1)
 
         # Store the comments in a list
         self.comments = []
@@ -339,9 +333,6 @@ class SecondPage(QWidget):
         self.comment_text_edit.clear()
         self.points_edit.clear()
 
-
-
-    # KEVIN UPDATED THIS FUNCTION
     # Exports the checked rows into a file
     def save_comments_to_file(self):
         # Allows the user to choose where to save the file and what to name it
