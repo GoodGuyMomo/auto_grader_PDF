@@ -185,6 +185,7 @@ class SecondPage(QWidget):
         comment_layout.addWidget(self.points_label)
         # POINT BOX
         self.points_edit = QLineEdit()
+        self.points_edit.setText("0") # This will initially set the points box to 0
         self.points_edit.setFixedWidth(30)
         self.points_edit.setFixedHeight(25)
         comment_layout.addWidget(self.points_edit)
@@ -337,7 +338,7 @@ class SecondPage(QWidget):
         # Clear the comment and points fields
         self.questions_edit.clear()
         self.comment_text_edit.clear()
-        self.points_edit.clear()
+        self.points_edit.setText("0") # Autofills points box with zero
 
     # Exports the checked rows into a file
     def save_comments_to_file(self):
