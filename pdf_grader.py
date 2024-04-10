@@ -159,6 +159,11 @@ class SecondPage(QWidget):
         self.save_comments_button.clicked.connect(self.save_comments_to_file)
         layout.addWidget(self.save_comments_button, 5, 3, 2, 1, alignment=Qt.AlignCenter)
         
+        # Back button
+        self.back_button = QPushButton("Back to Main Screen")
+        self.back_button.clicked.connect(self.go_to_main_page)
+        layout.addWidget(self.back_button, 0, 0, 1, 1, alignment=Qt.AlignCenter)
+        
         # Adding comments area ------------------------------------------------
         comment_layout = QHBoxLayout()
         layout.setSpacing(5)
@@ -361,6 +366,13 @@ class SecondPage(QWidget):
                 QMessageBox.information(self, "Success", "Your selected comments were saved successfully!")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"An error occurred while saving your comments: {str(e)}")
+       
+    # Allows the user to return to the main page
+    def go_to_main_page(self):
+        main_window = self.window()
+        if main_window is not None:
+            main_page = MainPage()
+            main_window.setCentralWidget(main_page)
         
 
 if __name__ == "__main__":
