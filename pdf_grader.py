@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
+import os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QDialog, \
     QLabel, QVBoxLayout, QWidget, QMessageBox, QScrollArea, QTextEdit, QHBoxLayout, QLineEdit, \
-        QGridLayout, QTableWidget, QTableWidgetItem, QHeaderView
-from PyQt5.QtGui import QPixmap, QImage, QFont, QPainter
+        QGridLayout, QTableWidget, QTableWidgetItem, QHeaderView, QFileDialog, QSizePolicy
+from PyQt5.QtGui import QPixmap, QImage, QFont, QPainter, QIcon
 from PyQt5.QtCore import Qt
 import fitz
 from PIL import Image
@@ -79,14 +80,18 @@ class MainPage(QMainWindow):
             ql.setFixedWidth(50)
             l.addWidget(ql)
 
-    # Allows a user to upload a PDF file to the program
+    # Allows a user to upload a folder of PDFs
     def upload_pdf(self):
-        
-        # Gets the file path of the PDF file
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open PDF File", "", "PDF Files (*.pdf)")
-        if file_path:
-            # Displays the file path in the textbox
-            self.lbl_pdf.setText(file_path)
+        folder_path = QFileDialog.getExistingDirectory(self, "Open Folder of PDFs")
+        if folder_path:
+            # List all PDF files in the folder
+            pdf_files = [file for file in os.listdir(folder_path) if file.endswith('.pdf')]
+            if pdf_files:
+                self.lbl_pdf.setText(folder_path)  # Display folder path
+                self.pdf_files = [os.path.join(folder_path, file) for file in pdf_files]
+                self.current_pdf_index = 0  # Initialize current PDF index
+            else:
+                QMessageBox.critical(self, "Error", "No PDF files found in the selected folder")
         
     # Allows a user to select a .txt comments file to upload into the program
     def upload_comments(self):
@@ -100,28 +105,37 @@ class MainPage(QMainWindow):
     def submit(self):
         pdf = self.lbl_pdf.text()
         upload = self.lbl_comments_upload.text()
-
-        if pdf == "": 
-            QMessageBox.critical(self, "Error", "Please upload a PDF document") 
-        elif upload == "": 
-            QMessageBox.critical(self, "Error", "Please upload an comments document") 
-        else:  
+    
+        if pdf == "":
+            QMessageBox.critical(self, "Error", "Please upload a PDF document")
+        elif upload == "":
+            QMessageBox.critical(self, "Error", "Please upload a comments document")
+        else:
             with open(upload, 'r') as file:
                 ans = file.read()
             print("Loaded comments:", ans)  # Debug print
-             
+    
             self.setStyleSheet("background-color: ;")
-            #DELETE THE ABOVE LINE ONCE THE GRAPHICS ARE ADDED TO THE SECOND PAGE
-            
-            next_page = SecondPage(pdf, ans)
-            self.setCentralWidget(next_page)
+    
+            # Switch content within MainPage
+            self.second_page = SecondPage(pdf, self.pdf_files, ans)  # Pass pdf_files to SecondPage
+            self.setCentralWidget(self.second_page)
+            self.second_page.load_pdf()  # Load the first PDF on the SecondPage
+
+
             
 class SecondPage(QWidget):
-    def __init__(self, pdf_path, comments):
+    def __init__(self, pdf_path, pdf_files, comments):
         super().__init__()
 
         layout = QGridLayout(self)
         layout.setContentsMargins(100, 100, 100, 100)
+        
+        self.pdf_path = pdf_path
+        self.pdf_files = pdf_files  # Store the list of PDF files
+        self.pdf_index = 0  # Index to keep track of the current PDF
+        self.comments = comments
+        self.current_pdf_index = 0  # Initialize the current PDF index
 
         #PDF view area --------------------------------------------------------
         self.scroll_area = QScrollArea()
@@ -130,6 +144,25 @@ class SecondPage(QWidget):
         self.scroll_layout = QVBoxLayout(self.scroll_widget)
         self.scroll_area.setWidget(self.scroll_widget)
         layout.addWidget(self.scroll_area, 1, 1, 8, 1)
+        
+        # Create a layout for the buttons
+        button_layout = QHBoxLayout()
+        
+        # Previous PDF button
+        self.previous_button = PicButton("graphics/prev_arrow.png")
+        self.previous_button.clicked.connect(self.load_previous_pdf)
+        button_layout.addWidget(self.previous_button, alignment=Qt.AlignLeft)
+        
+        # Next PDF button
+        self.next_button = PicButton("graphics/next_arrow.png")
+        self.next_button.clicked.connect(self.load_next_pdf)
+        button_layout.addWidget(self.next_button, alignment=Qt.AlignLeft)
+        
+        # Add button layout to the main layout
+        layout.addLayout(button_layout, 20, 1, 1, 2)
+
+
+
         #----------------------------------------------------------------------
 
         # Set a fixed size for the main window
@@ -207,6 +240,9 @@ class SecondPage(QWidget):
 
         # Store the comments in a list
         self.comments = []
+        
+        # Load the first PDF when the SecondPage is initialized
+        self.load_pdf()
 
         '''
         NEED TO ADD THESE TO THE TABLE ABOVE
@@ -229,47 +265,48 @@ class SecondPage(QWidget):
         layout.addWidget(self.comments_display, 6, 0, 1, 3)  # Add the comments_display to the layout
         '''
     
-        file_path = pdf_path
-        if file_path:
-            try:
-                pdf_document = fitz.open(file_path)
-
-                self.clear_scroll_layout()
-
+    # Add the load_pdf() method to load and display PDFs
+    # Load PDF on second page
+    def load_pdf(self):
+        try:
+            self.clear_scroll_layout()
+            pdf_files = [file for file in os.listdir(self.pdf_path) if file.endswith('.pdf')]
+            if pdf_files:
+                pdf_file = pdf_files[self.pdf_index]
+                pdf_document = fitz.open(os.path.join(self.pdf_path, pdf_file))
                 for page_number in range(pdf_document.page_count):
                     page = pdf_document[page_number]
-                    
-                    # Print the text on the page
-                    text = page.get_text("text")
-                    print(f"Page {page_number + 1}:\n{text}\n")
-
-                    # Display the page as an image
                     pix = page.get_pixmap()
                     image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
-                    
-                    # Convert the image to QImage
                     q_image = QImage(image.tobytes(), image.width, image.height, QImage.Format_RGB888)
-
-                    if q_image.isNull():
-                        print("QImage is null for page", page_number)
-                        continue  # Skip to the next page if the QImage is null
-
-                    # Convert QImage to QPixmap
-                    q_pixmap = QPixmap.fromImage(q_image)
-
-                    if q_pixmap.isNull():
-                        print("QPixmap is null for page", page_number)
-                        continue  # Skip to the next page if the QPixmap is null
-
-                    # Create a QLabel to display the QPixmap
-                    image_label = QLabel()
-                    image_label.setPixmap(q_pixmap)
-                    self.scroll_layout.addWidget(image_label)
-
+                    if not q_image.isNull():
+                        image_label = QLabel()
+                        image_label.setPixmap(QPixmap.fromImage(q_image))
+                        self.scroll_layout.addWidget(image_label)
                 pdf_document.close()
-            except Exception as e:
-                print(f"An error occurred: {str(e)}")
-                QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
+            else:
+                QMessageBox.critical(self, "Error", "No PDF files found in the selected folder")
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
+
+    # Load previous PDF
+    def load_previous_pdf(self):
+        if self.pdf_index > 0:
+            self.pdf_index -= 1
+            self.load_pdf()
+
+    # Load next PDF
+    def load_next_pdf(self):
+        if self.pdf_index < len(self.pdf_files) - 1:
+            self.pdf_index += 1
+            self.load_pdf()
+            
+    def clear_scroll_layout(self):
+        while self.scroll_layout.count():
+            child = self.scroll_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
     
     # Allows user to upload a txt file containing comments and points
     # Assumes the format that the first line contains the comment and the second line is the 
@@ -373,6 +410,7 @@ class SecondPage(QWidget):
         if main_window is not None:
             main_page = MainPage()
             main_window.setCentralWidget(main_page)
+
         
 
 if __name__ == "__main__":
