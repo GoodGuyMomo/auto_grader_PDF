@@ -1,9 +1,3 @@
-# pip install PyPDF2
-# pip install PyMuPDF 
-# pip install Pillow
-# The above lines are comments indicating that you need to install these libraries via pip if you haven't already done so. 
-
-
 import sys
 import os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QDialog, \
@@ -15,6 +9,8 @@ import fitz
 from PIL import Image
 from PyQt5.QtWidgets import QCheckBox, QTableWidgetItem
 import os
+from os.path import splitext, basename
+
 
 class PicButton(QPushButton):
     def __init__(self, img, parent=None):
@@ -145,6 +141,11 @@ class SecondPage(QWidget):
         self.pdf_index = 0  # Index to keep track of the current PDF
         self.comments = comments
         self.current_pdf_index = 0  # Initialize the current PDF index
+        
+        self.current_pdf_name = None
+        if pdf_files:
+            self.current_pdf_name = basename(pdf_files[self.pdf_index])
+
 
         #PDF view area --------------------------------------------------------
         self.scroll_area = QScrollArea()
@@ -299,6 +300,7 @@ class SecondPage(QWidget):
             print(f"An error occurred: {str(e)}")
             QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
 
+
     # Load previous PDF
     def load_previous_pdf(self):
         if self.pdf_index > 0:
@@ -393,8 +395,10 @@ class SecondPage(QWidget):
 
     # Exports the checked rows into a file
     def save_comments_to_file(self):
+        # Automatically prefill the filename with the current PDF name and comments
+        default_filename = f"{self.current_pdf_name}_comments.txt"
         # Allows the user to choose where to save the file and what to name it
-        file_path, _ = QFileDialog.getSaveFileName(self, "Save Comments", "", "Text Files (*.txt)")
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save Comments", default_filename, "Text Files (*.txt)")
         if file_path:
             try:
                 with open(file_path, 'w') as file:
@@ -428,4 +432,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-    
