@@ -10,11 +10,6 @@ import fitz
 from PIL import Image
 from PyQt5.QtWidgets import QCheckBox, QTableWidgetItem
 
-<<<<<<< HEAD
-# This class allows users to upload a PDF document.
-# The user can also upload or create anser documents.
-# After submission, the second page is displayed containing the PDF, allowing user to add comments and points.
-=======
 
 class PicButton(QPushButton):
     def __init__(self, img, parent=None):
@@ -26,7 +21,6 @@ class PicButton(QPushButton):
         painter.drawPixmap(event.rect(), self.pixmap)
     
 
->>>>>>> eb504533db54d224218089371746ab7e7efc6043
 class MainPage(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -129,26 +123,6 @@ class MainPage(QMainWindow):
             self.second_page.load_pdf()  # Load the first PDF on the SecondPage
 
 
-<<<<<<< HEAD
-        # Error checking for successful upload of the pdf and answer document.
-        if pdf == "": 
-            QMessageBox.critical(self, "Error", "Please upload a PDF document") 
-        elif upload == "" and create == "": 
-            QMessageBox.critical(self, "Error", "Please upload or create an answer document") 
-        else: 
-            ans = self.lbl_answer_upload.text() 
-            if ans == "": 
-                ans = self.lbl_answer_create.text() 
-            if upload:
-                with open(upload, 'r') as file:
-                    ans = file.read()
-                print("Loaded answers:", ans)  # Debug print
-                 
-            
-            next_page = SecondPage(pdf, ans)
-            self.setCentralWidget(next_page)
-=======
->>>>>>> eb504533db54d224218089371746ab7e7efc6043
             
 class SecondPage(QWidget):
     def __init__(self, pdf_path, pdf_files, comments):
