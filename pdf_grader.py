@@ -81,6 +81,7 @@ class MainPage(QMainWindow):
             l.addWidget(ql)
 
     # Allows a user to upload a folder of PDFs
+    # Updated 4/15
     def upload_pdf(self):
         folder_path = QFileDialog.getExistingDirectory(self, "Open Folder of PDFs")
         if folder_path:
