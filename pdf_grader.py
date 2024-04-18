@@ -1,4 +1,9 @@
-# -*- coding: utf-8 -*-
+# pip install PyPDF2
+# pip install PyMuPDF 
+# pip install Pillow
+# The above lines are comments indicating that you need to install these libraries via pip if you haven't already done so. 
+
+
 import sys
 import os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QDialog, \
@@ -9,7 +14,7 @@ from PyQt5.QtCore import Qt
 import fitz
 from PIL import Image
 from PyQt5.QtWidgets import QCheckBox, QTableWidgetItem
-
+import os
 
 class PicButton(QPushButton):
     def __init__(self, img, parent=None):
@@ -19,7 +24,10 @@ class PicButton(QPushButton):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.drawPixmap(event.rect(), self.pixmap)
-    
+
+
+# Get the directory of the current script
+current_dir = os.path.dirname(__file__)
 
 class MainPage(QMainWindow):
     def __init__(self):
@@ -32,14 +40,14 @@ class MainPage(QMainWindow):
         layout.setContentsMargins(100, 20, 100, 20)
         self.setStyleSheet("background-color: grey")
 
-        self.img_splash = QPixmap("graphics/pdfGUI_welcomeBanner.png")
+        self.img_splash = QPixmap(os.path.join(current_dir, "graphics/pdfGUI_welcomeBanner.png"))
         self.lbl_splash = QLabel()
         self.lbl_splash.setPixmap(self.img_splash)
         layout.addWidget(self.lbl_splash)
 
         self.add_space(layout, 2)
 
-        self.btn_open = PicButton("graphics/pdfGUI_pdfButton.png")
+        self.btn_open = PicButton(os.path.join(current_dir, "graphics/pdfGUI_pdfButton.png"))
         self.btn_open.clicked.connect(self.upload_pdf)
         self.btn_open.setFixedSize(900, 150)
         layout.addWidget(self.btn_open)
@@ -55,7 +63,7 @@ class MainPage(QMainWindow):
         self.setMinimumSize(1000, 800)  # Adjust the size as need
         
         # Create button to upload comments
-        self.btn_comments_upload = PicButton("graphics/pdfGUI_uploadButton.png")
+        self.btn_comments_upload = PicButton(os.path.join(current_dir,"graphics/pdfGUI_uploadButton.png"))
         # Upon being clicked, the upload_comments function is run
         self.btn_comments_upload.clicked.connect(self.upload_comments)
         self.btn_comments_upload.setFixedSize(900, 150)
@@ -68,7 +76,7 @@ class MainPage(QMainWindow):
         
         self.add_space(layout, 5)
         
-        self.btn_submit = PicButton("graphics/pdfGUI_nextButton.png")
+        self.btn_submit = PicButton(os.path.join(current_dir,"graphics/pdfGUI_nextButton.png"))
         self.btn_submit.clicked.connect(self.submit)
         self.btn_submit.setFixedSize(600, 100)
         layout.addWidget(self.btn_submit, alignment=Qt.AlignCenter)
@@ -412,10 +420,12 @@ class SecondPage(QWidget):
             main_page = MainPage()
             main_window.setCentralWidget(main_page)
 
-        
-
-if __name__ == "__main__":
+def run():
     app = QApplication(sys.argv)
     window = MainPage()
     window.show()
     sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    run()
+    
