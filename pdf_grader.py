@@ -411,6 +411,7 @@ class SecondPage(QWidget):
             QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
 
 
+
     # Load previous PDF
     def load_previous_pdf(self):
         if self.pdf_index > 0:
