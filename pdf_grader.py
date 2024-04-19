@@ -157,6 +157,7 @@ class MainPage(QMainWindow):
     
     # Allows a user to select a .txt comments file to upload into the program
     def upload_comments(self):
+        global comments_path
         
         # Gets the filepath of the comments file
         file_path, _ = QFileDialog.getOpenFileName(self, "Open Comments File", "", "Text Files (*.txt)")
@@ -164,6 +165,8 @@ class MainPage(QMainWindow):
             # Displays the file path in the textbox
             self.lbl_comments_upload.setText(file_path)
             QMessageBox.information(self, "Success", "Comments successfully uploaded")
+        
+        comments_path = file_path
     
         
     def submit(self):
@@ -174,29 +177,22 @@ class MainPage(QMainWindow):
             QMessageBox.critical(self, "Error", "Please upload a PDF document")
         elif upload == "":
             QMessageBox.critical(self, "Error", "Please upload a comments document")
-        else:
-            with open(upload, 'r') as file:
-                ans = file.read()
-            print("Loaded comments:", ans)  # Debug print
-    
-            self.setStyleSheet("background-color: ;")
-    
+        else:  
             # Switch content within MainPage
-            self.second_page = SecondPage(pdf, self.pdf_files, ans, points)  # Pass pdf_files to SecondPage
+            self.second_page = SecondPage(pdf, self.pdf_files, points, comments_path)  # Pass pdf_files to SecondPage
             self.setCentralWidget(self.second_page)
             self.second_page.load_pdf()  # Load the first PDF on the SecondPage
 
 
             
 class SecondPage(QWidget):
-    def __init__(self, pdf_path, pdf_files, comments, points):
+    def __init__(self, pdf_path, pdf_files, points, comments_path):
         super().__init__()
         
         # Grabbing Info -------------------------------------------------------
         self.pdf_path = pdf_path
         self.pdf_files = pdf_files  # Store the list of PDF files
         self.pdf_index = 0  # Index to keep track of the current PDF
-        self.comments = comments
         self.current_pdf_index = 0  # Initialize the current PDF index
         
         
@@ -280,18 +276,19 @@ class SecondPage(QWidget):
                 self.comment_table.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
 
         self.comment_table.setMaximumHeight(1200)
+        self.fill_comments() #fill in the comments
         
         # Add the table widget to the layout
         comments_layout.addWidget(self.comment_table)
         #----------------------------------------------------------------------
-
+        
         
         # Adding comments area ------------------------------------------------
         comm_layout = QHBoxLayout()
         
         # QUESTION LABEL
         self.questions_label = QLabel("Question #:")
-        self.questions_label.setStyleSheet("background-color: lightblue;")
+        self.questions_label.setStyleSheet("background-color: #FFCCCC;")
         comm_layout.addWidget(self.questions_label)
         comm_layout.setSpacing(5)
         
@@ -332,7 +329,7 @@ class SecondPage(QWidget):
         self.add_comment_button = QPushButton("Add")
         self.add_comment_button.setFixedHeight(50)
         self.add_comment_button.clicked.connect(self.add_comment)
-        self.add_comment_button.setStyleSheet("background-color: #FFCCCC;")
+        self.add_comment_button.setStyleSheet("background-color: #lightblue;")
         comments_layout.addWidget(self.add_comment_button)
         comments_layout.setSpacing(30)
         
@@ -431,34 +428,44 @@ class SecondPage(QWidget):
             if child.widget():
                 child.widget().deleteLater()
     
-    # Allows user to upload a txt file containing comments and points
-    # Assumes the format that the first line contains the comment and the second line is the 
-    # number of points lost
-    def upload_comments(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open Comments File", "", "Text Files (*.txt)")
-
-        if file_path:
+    def fill_comments(self):
+        if comments_path:
             try:
-                comments = []
-                points = []
-
-                # Open text file
-                with open(file_path, 'r') as file:
+                with open(comments_path, 'r') as file:
                     lines = file.readlines()
-
+    
                     # Iterate through lines and process comments and points
-                    for i in range(0, len(lines), 2):
-                        comments.append(lines[i].strip())
-                        points.append(int(lines[i + 1].strip()))
-
-                # Output comments and points to check list contents
-                print("Comments:", comments)
-                print("Points:", points)
-
+                    for i in range(0, len(lines), 3):
+                        question = lines[i].strip()
+                        comment = lines[i + 1].strip()
+                        points = int(lines[i + 2].strip()) if i + 2 < len(lines) else 0  # Default points to 0 if not provided
+                        # Add the comment to the table
+                        self.add_comment_to_table(question, comment, points)
             except Exception as e:
                 print(f"An error occurred: {str(e)}")
                 QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
-        
+
+
+    def add_comment_to_table(self, question, comment, points):
+        # Add a new row to the table widget
+        row_position = self.comment_table.rowCount()
+        self.comment_table.insertRow(row_position)
+    
+        # Add a checkbox to the first column of the new row
+        checkbox = QCheckBox()
+        checkbox_layout = QHBoxLayout()  # Set layout for the checkbox
+        checkbox_layout.addWidget(checkbox, alignment=Qt.AlignCenter)  # Add checkbox to the layout
+        checkbox_layout.setContentsMargins(0, 0, 0, 0)  # Set layout margins
+        cell_widget = QWidget()  # Create a widget to hold the checkbox
+        cell_widget.setLayout(checkbox_layout)  # Set layout for the widget
+        self.comment_table.setCellWidget(row_position, 0, cell_widget)  # Set widget in the table cell
+    
+        # Add the question, comment, and points to the appropriate columns
+        self.comment_table.setItem(row_position, 1, QTableWidgetItem(question))
+        self.comment_table.setItem(row_position, 2, QTableWidgetItem(comment))
+        self.comment_table.setItem(row_position, 3, QTableWidgetItem(str(points)))
+
+
 
     def clear_scroll_layout(self):
         while self.scroll_layout.count():
