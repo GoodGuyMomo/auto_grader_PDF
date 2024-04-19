@@ -392,6 +392,7 @@ class SecondPage(QWidget):
             pdf_files = [file for file in os.listdir(self.pdf_path) if file.endswith('.pdf')]
             if pdf_files:
                 pdf_file = pdf_files[self.pdf_index]
+                self.current_pdf_name = pdf_file  # Update current_pdf_name
                 pdf_document = fitz.open(os.path.join(self.pdf_path, pdf_file))
                 for page_number in range(pdf_document.page_count):
                     page = pdf_document[page_number]
@@ -562,6 +563,7 @@ class SecondPage(QWidget):
                 QMessageBox.information(self, "Success", "Your selected comments were saved successfully!")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"An error occurred while saving your comments: {str(e)}")
+
        
     # Allows the user to return to the main page
     def go_to_main_page(self):
