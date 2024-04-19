@@ -214,7 +214,7 @@ class SecondPage(QWidget):
         self.setStyleSheet("background-color: white") #background color
        
         # Set a fixed size for the main window
-        self.setMinimumSize(2000, 2000)  # Adjust the size as needed
+        self.adjustSize()  # Adjust the size as needed
 
         
         # Back button ---------------------------------------------------------
