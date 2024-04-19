@@ -1,0 +1,12 @@
+1
+Incorrect output
+5
+2
+Spelling error
+2
+3
+Wrong format
+2
+4
+No answer
+5
