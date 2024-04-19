@@ -1,3 +1,11 @@
+'''
+Make sure to have these pip installed:
+pip install PyPDF2
+pip install PyMuPDF   
+pip install Pillow
+'''
+
+
 import sys
 import os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, \
@@ -96,6 +104,7 @@ class MainPage(QMainWindow):
         points_save_button = QPushButton("Save Total Points")
         points_save_button.clicked.connect(self.save_points)
         self.btn_comments_upload.setFixedSize(900, 150)
+        self.btn_comments_upload.setStyleSheet("background-color: lightblue")
         layout.addWidget(points_save_button, alignment=Qt.AlignCenter)
         
         self.add_space(layout, 5) #spacing
@@ -139,7 +148,7 @@ class MainPage(QMainWindow):
                 self.lbl_pdf.setText(folder_path)  # Display folder path
                 self.pdf_files = [os.path.join(folder_path, file) for file in pdf_files]
                 self.current_pdf_index = 0  # Initialize current PDF index
-                QMessageBox.information(self, "Success", "Folder successfully updated")
+                QMessageBox.information(self, "Success", "Folder successfully uploaded")
             else:
                 QMessageBox.critical(self, "Error", "No PDF files found in the selected folder")
         
@@ -154,7 +163,7 @@ class MainPage(QMainWindow):
         if file_path:
             # Displays the file path in the textbox
             self.lbl_comments_upload.setText(file_path)
-            QMessageBox.information(self, "Success", "Folder successfully updated")
+            QMessageBox.information(self, "Success", "Comments successfully uploaded")
     
         
     def submit(self):
@@ -182,12 +191,8 @@ class MainPage(QMainWindow):
 class SecondPage(QWidget):
     def __init__(self, pdf_path, pdf_files, comments, points):
         super().__init__()
-
-        self.points = points
         
-        layout = QGridLayout(self)
-        layout.setContentsMargins(100, 100, 100, 100)
-        
+        # Grabbing Info -------------------------------------------------------
         self.pdf_path = pdf_path
         self.pdf_files = pdf_files  # Store the list of PDF files
         self.pdf_index = 0  # Index to keep track of the current PDF
@@ -195,51 +200,77 @@ class SecondPage(QWidget):
         self.current_pdf_index = 0  # Initialize the current PDF index
         
         
-        self.setStyleSheet("background-color: white") #background color
-        
         self.current_pdf_name = None
         if pdf_files:
             self.current_pdf_name = basename(pdf_files[self.pdf_index])
+            
+        #grab points from the previous page
+        self.points = points
+        # ---------------------------------------------------------------------
+        
+        
+        
+        
+        #MAIN SCREEN SETTING --------------------------------------------------
+        #Create a vertical box layout for the widget
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(100, 20, 100, 20) #set the margins
+        self.setStyleSheet("background-color: white") #background color
+       
+        # Set a fixed size for the main window
+        self.setMinimumSize(2000, 2000)  # Adjust the size as needed
 
+        
+        # Back button ---------------------------------------------------------
+        self.back_button = QPushButton("Back to Main Screen")
+        self.back_button.clicked.connect(self.go_to_main_page)
+        self.back_button.setStyleSheet("background-color: lightblue;")
+        layout.addWidget(self.back_button, alignment=Qt.AlignLeft)
+        
 
+        
         #PDF view area --------------------------------------------------------
+        #PDF Layout 
+        pdf_layout = QVBoxLayout()
+        
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_widget = QWidget()
         self.scroll_layout = QVBoxLayout(self.scroll_widget)
         self.scroll_area.setWidget(self.scroll_widget)
-        layout.addWidget(self.scroll_area, 1, 1, 8, 1)
+        self.scroll_area.setMaximumHeight(1500)
+        pdf_layout.addWidget(self.scroll_area)
         
         # Create a layout for the buttons
         button_layout = QHBoxLayout()
         
         # Previous PDF button
-        self.previous_button = PicButton("graphics/prev_arrow.png")
+        self.previous_button = PicButton(os.path.join(current_dir, "graphics/prev_arrow.png"))
         self.previous_button.clicked.connect(self.load_previous_pdf)
         button_layout.addWidget(self.previous_button, alignment=Qt.AlignLeft)
         
         # Next PDF button
-        self.next_button = PicButton("graphics/next_arrow.png")
+        self.next_button = PicButton(os.path.join(current_dir, "graphics/next_arrow.png"))
         self.next_button.clicked.connect(self.load_next_pdf)
-        button_layout.addWidget(self.next_button, alignment=Qt.AlignLeft)
+        button_layout.addWidget(self.next_button, alignment=Qt.AlignRight)
         
         # Add button layout to the main layout
-        layout.addLayout(button_layout, 20, 1, 1, 2)
-
-
-
+        pdf_layout.addLayout(button_layout)
         #----------------------------------------------------------------------
-
-        # Set a fixed size for the main window
-        self.setMinimumSize(1000, 800)  # Adjust the size as needed
         
         
         # Comments preview table ----------------------------------------------
+        #comments layout
+        comments_layout = QVBoxLayout()
+        
         self.comment_table = QTableWidget()
         self.comment_table.setColumnCount(4)
         self.comment_table.setHorizontalHeaderLabels(["Export", "Question #:", "Comment:", "Points Deducted:"])
         self.comment_table.verticalHeader().setVisible(False) # Hide the row numbers from the left of the comment table
         self.comment_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch) # Set the header to be stretched and fill the table completely
+        
+        # Set size policy for the table widget
+        self.comment_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # Set the size of each column to make the comments section the biggest
         for column in range(self.comment_table.columnCount()):
@@ -248,60 +279,86 @@ class SecondPage(QWidget):
             else:
                 self.comment_table.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
 
+        self.comment_table.setMaximumHeight(1200)
+        
         # Add the table widget to the layout
-        layout.addWidget(self.comment_table, 1, 3, 4, 1) #row 1, column 3, spanning 5 rows and 1 coulmn
+        comments_layout.addWidget(self.comment_table)
         #----------------------------------------------------------------------
 
-        # Export Button
-        self.save_comments_button = QPushButton("Export")
-        self.save_comments_button.clicked.connect(self.save_comments_to_file)
-        layout.addWidget(self.save_comments_button, 5, 3, 2, 1, alignment=Qt.AlignCenter)
-        
-        # Back button
-        self.back_button = QPushButton("Back to Main Screen")
-        self.back_button.clicked.connect(self.go_to_main_page)
-        layout.addWidget(self.back_button, 0, 0, 1, 1, alignment=Qt.AlignCenter)
         
         # Adding comments area ------------------------------------------------
-        comment_layout = QHBoxLayout()
-        layout.setSpacing(5)
+        comm_layout = QHBoxLayout()
         
         # QUESTION LABEL
         self.questions_label = QLabel("Question #:")
-        comment_layout.addWidget(self.questions_label)
+        self.questions_label.setStyleSheet("background-color: lightblue;")
+        comm_layout.addWidget(self.questions_label)
+        comm_layout.setSpacing(5)
+        
         # QUESTION BOX
         self.questions_edit = QLineEdit()
-        self.questions_edit.setFixedWidth(30)
-        self.questions_edit.setFixedHeight(25)
-        comment_layout.addWidget(self.questions_edit)
-        
-        # COMMENT LABEL
-        self.comment_label = QLabel("Comment:")
-        comment_layout.addWidget(self.comment_label)
-        # COMMENT BOX
-        self.comment_text_edit = QTextEdit()
-        self.comment_text_edit.setFixedHeight(25)
-        comment_layout.addWidget(self.comment_text_edit)
+        comm_layout.addWidget(self.questions_edit)
+        comm_layout.setSpacing(10)
         
         # POINT LABEL
         self.points_label = QLabel("Points off:")
-        comment_layout.addWidget(self.points_label)
+        self.points_label.setStyleSheet("background-color: #FFCCCC")
+        comm_layout.addWidget(self.points_label)
+        comm_layout.setSpacing(5)
+        
         # POINT BOX
         self.points_edit = QLineEdit()
         self.points_edit.setText("0") # This will initially set the points box to 0
-        self.points_edit.setFixedWidth(30)
-        self.points_edit.setFixedHeight(25)
-        comment_layout.addWidget(self.points_edit)
+        comm_layout.addWidget(self.points_edit)
+        
+        comments_layout.setSpacing(5)
+        comments_layout.addLayout(comm_layout)
+        comments_layout.setSpacing(5)
+        
+        # COMMENT LABEL
+        self.comment_label = QLabel("Comment:")
+        self.comment_label.setAlignment(Qt.AlignCenter)
+        self.comment_label.setStyleSheet("background-color: #FFCCCC;")
+        self.comment_label.setFixedHeight(40)
+        comments_layout.addWidget(self.comment_label)
+        
+        # COMMENT BOX
+        self.comment_text_edit = QTextEdit()
+        self.comment_text_edit.setFixedHeight(100)
+        comments_layout.addWidget(self.comment_text_edit)
+        comments_layout.setSpacing(10)
         
         # ADD BUTTON
         self.add_comment_button = QPushButton("Add")
-        self.add_comment_button.setFixedWidth(80)
-        self.add_comment_button.setFixedHeight(25)
+        self.add_comment_button.setFixedHeight(50)
         self.add_comment_button.clicked.connect(self.add_comment)
-        comment_layout.addWidget(self.add_comment_button)
+        self.add_comment_button.setStyleSheet("background-color: #FFCCCC;")
+        comments_layout.addWidget(self.add_comment_button)
+        comments_layout.setSpacing(30)
+        
+        # Export Button
+        self.save_comments_button = QPushButton("Export")
+        self.save_comments_button.clicked.connect(self.save_comments_to_file)
+        self.save_comments_button.setStyleSheet("background-color: lightblue;")
+        comments_layout.addWidget(self.save_comments_button)
+        # ---------------------------------------------------------------------
 
         # LAYOUT SETTINGS
-        layout.addLayout(comment_layout, 5, 3, 1, 1)
+        document_layout = QHBoxLayout()  #for side-by-side arrangement
+        
+        # Add the PDF view area to the document layout
+        document_layout.addLayout(pdf_layout)
+        
+        # Add some spacing between the PDF view area and comments preview table
+        document_layout.addSpacing(20)
+        
+        # Add the comments layout to the document layout
+        document_layout.addLayout(comments_layout)
+        
+        # Add the document layout to the main layout
+        layout.addLayout(document_layout)
+
+        
 
         # Store the comments in a list
         self.comments = []
