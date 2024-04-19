@@ -1,9 +1,10 @@
 import sys
 import os
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QDialog, \
-    QLabel, QVBoxLayout, QWidget, QMessageBox, QScrollArea, QTextEdit, QHBoxLayout, QLineEdit, \
-        QGridLayout, QTableWidget, QTableWidgetItem, QHeaderView, QFileDialog, QSizePolicy
-from PyQt5.QtGui import QPixmap, QImage, QFont, QPainter, QIcon
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, \
+    QDialog, QLabel, QVBoxLayout, QWidget, QMessageBox, QScrollArea, QTextEdit, \
+        QHBoxLayout, QLineEdit, QGridLayout, QTableWidget, QTableWidgetItem, \
+            QHeaderView, QFileDialog, QSizePolicy
+from PyQt5.QtGui import QPixmap, QImage, QFont, QPainter, QIcon, QIntValidator, QValidator
 from PyQt5.QtCore import Qt
 import fitz
 from PIL import Image
@@ -31,51 +32,80 @@ class MainPage(QMainWindow):
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
+        
+        # Set a fixed size for the main window
+        self.setMinimumSize(1000, 800)  # Adjust the size as need
 
+        #MAIN SCREEN SETTING --------------------------------------------------
+        #Create a vertical box layout for the widget
         layout = QVBoxLayout(central_widget)
-        layout.setContentsMargins(100, 20, 100, 20)
-        self.setStyleSheet("background-color: grey")
-
+        layout.setContentsMargins(100, 20, 100, 20) #set the margins
+        self.setStyleSheet("background-color: white") #background color
         self.img_splash = QPixmap(os.path.join(current_dir, "graphics/pdfGUI_welcomeBanner.png"))
-        self.lbl_splash = QLabel()
-        self.lbl_splash.setPixmap(self.img_splash)
-        layout.addWidget(self.lbl_splash)
+        #----------------------------------------------------------------------
+        
+        
+        #ADDING ELEMENTS TO MAIN PAGE -----------------------------------------
+        #Top banner
+        self.lbl_splash = QLabel() #crreate a label for the banner
+        self.lbl_splash.setPixmap(self.img_splash) #set map for banner
+        layout.addWidget(self.lbl_splash, alignment=Qt.AlignCenter) #add to layout'
+        
+        self.add_space(layout, 2) #spacing
 
-        self.add_space(layout, 2)
-
+        #Open PDF butoon
         self.btn_open = PicButton(os.path.join(current_dir, "graphics/pdfGUI_pdfButton.png"))
         self.btn_open.clicked.connect(self.upload_pdf)
         self.btn_open.setFixedSize(900, 150)
-        layout.addWidget(self.btn_open)
+        layout.addWidget(self.btn_open, alignment=Qt.AlignCenter) #add to layout
 
+        #Text box for PDF file path disply - not needed for now
         self.lbl_pdf = QLabel("", self)
-        self.lbl_pdf.setStyleSheet("border: 1px solid black; background-color: white;")
-        self.lbl_pdf.setFixedSize(900, 50)
-        layout.addWidget(self.lbl_pdf)
-
-        self.add_space(layout, 3)
-
-        # Set a fixed size for the main window
-        self.setMinimumSize(1000, 800)  # Adjust the size as need
+        #self.lbl_pdf.setStyleSheet("border: 1px solid black; background-color: white;")
+        #self.lbl_pdf.setFixedSize(900, 50)
+        #layout.addWidget(self.lbl_pdf)
         
-        # Create button to upload comments
+        self.add_space(layout, 1) #spacing
+
+        
+        # Upload comments button
         self.btn_comments_upload = PicButton(os.path.join(current_dir,"graphics/pdfGUI_uploadButton.png"))
-        # Upon being clicked, the upload_comments function is run
         self.btn_comments_upload.clicked.connect(self.upload_comments)
         self.btn_comments_upload.setFixedSize(900, 150)
-        layout.addWidget(self.btn_comments_upload)
+        layout.addWidget(self.btn_comments_upload, alignment=Qt.AlignCenter) #add to layout
 
+        #Text box for PDF file path disply - not needed for now
         self.lbl_comments_upload = QLabel("", self)
-        self.lbl_comments_upload.setStyleSheet("border: 1px solid black; background-color: white;")
-        self.lbl_pdf.setFixedSize(900, 50)
-        layout.addWidget(self.lbl_comments_upload)
+        #self.lbl_comments_upload.setStyleSheet("border: 1px solid black; background-color: white;")
+        #self.lbl_pdf.setFixedSize(900, 50)
+        #layout.addWidget(self.lbl_comments_upload)
         
-        self.add_space(layout, 5)
+        self.add_space(layout, 1) #spacing
         
+        
+        # Total Points Textbox
+        self.total_points = QLineEdit()
+        self.total_points.setText("Type the total points here...")
+        self.total_points.setReadOnly(False)
+        self.total_points.setStyleSheet("background-color: white; border: 1px solid black;")
+        self.total_points.setFixedWidth(850)
+        self.total_points.setFixedHeight(70)
+        layout.addWidget(self.total_points, alignment=Qt.AlignCenter) #add to layout
+        
+        # Total Points Save Button
+        points_save_button = QPushButton("Save Total Points")
+        points_save_button.clicked.connect(self.save_points)
+        self.btn_comments_upload.setFixedSize(900, 150)
+        layout.addWidget(points_save_button, alignment=Qt.AlignCenter)
+        
+        self.add_space(layout, 5) #spacing
+        
+        #Submit button
         self.btn_submit = PicButton(os.path.join(current_dir,"graphics/pdfGUI_nextButton.png"))
         self.btn_submit.clicked.connect(self.submit)
         self.btn_submit.setFixedSize(600, 100)
-        layout.addWidget(self.btn_submit, alignment=Qt.AlignCenter)
+        layout.addWidget(self.btn_submit, alignment=Qt.AlignCenter) #add to layout
+        #----------------------------------------------------------------------
 
 
     def add_space(self, l, times):
@@ -83,6 +113,20 @@ class MainPage(QMainWindow):
             ql = QLabel("")
             ql.setFixedWidth(50)
             l.addWidget(ql)
+
+    def save_points(self):
+        global points
+    
+        # Validate input
+        validator = QIntValidator()
+        if validator.validate(self.total_points.text(), 0)[0] == QValidator.Acceptable:
+            points = int(self.total_points.text())
+            self.points = points  # Store total points as an attribute
+            QMessageBox.information(self, "Points Saved", "Points has been saved.")
+        else:
+            QMessageBox.warning(self, "Invalid Input", "Please enter a valid integer for total points.")
+            
+            
 
     # Allows a user to upload a folder of PDFs
     # Updated 4/15
@@ -95,9 +139,13 @@ class MainPage(QMainWindow):
                 self.lbl_pdf.setText(folder_path)  # Display folder path
                 self.pdf_files = [os.path.join(folder_path, file) for file in pdf_files]
                 self.current_pdf_index = 0  # Initialize current PDF index
+                QMessageBox.information(self, "Success", "Folder successfully updated")
             else:
                 QMessageBox.critical(self, "Error", "No PDF files found in the selected folder")
         
+    
+    
+    
     # Allows a user to select a .txt comments file to upload into the program
     def upload_comments(self):
         
@@ -106,6 +154,8 @@ class MainPage(QMainWindow):
         if file_path:
             # Displays the file path in the textbox
             self.lbl_comments_upload.setText(file_path)
+            QMessageBox.information(self, "Success", "Folder successfully updated")
+    
         
     def submit(self):
         pdf = self.lbl_pdf.text()
@@ -123,16 +173,18 @@ class MainPage(QMainWindow):
             self.setStyleSheet("background-color: ;")
     
             # Switch content within MainPage
-            self.second_page = SecondPage(pdf, self.pdf_files, ans)  # Pass pdf_files to SecondPage
+            self.second_page = SecondPage(pdf, self.pdf_files, ans, points)  # Pass pdf_files to SecondPage
             self.setCentralWidget(self.second_page)
             self.second_page.load_pdf()  # Load the first PDF on the SecondPage
 
 
             
 class SecondPage(QWidget):
-    def __init__(self, pdf_path, pdf_files, comments):
+    def __init__(self, pdf_path, pdf_files, comments, points):
         super().__init__()
 
+        self.points = points
+        
         layout = QGridLayout(self)
         layout.setContentsMargins(100, 100, 100, 100)
         
@@ -141,6 +193,9 @@ class SecondPage(QWidget):
         self.pdf_index = 0  # Index to keep track of the current PDF
         self.comments = comments
         self.current_pdf_index = 0  # Initialize the current PDF index
+        
+        
+        self.setStyleSheet("background-color: white") #background color
         
         self.current_pdf_name = None
         if pdf_files:
@@ -393,26 +448,53 @@ class SecondPage(QWidget):
         self.comment_text_edit.clear()
         self.points_edit.setText("0") # Autofills points box with zero
 
+    def calculate_total_score(self):
+        # Iterate over the rows of the table to calculate total score
+        total_score = int(self.points)  # Assuming points is the total points saved from the first page
+        
+        # Iterate over the rows of the table
+        for row in range(self.comment_table.rowCount()):
+            checkbox_item = self.comment_table.cellWidget(row, 0)
+            if isinstance(checkbox_item, QWidget):  # Check if the cell contains a widget
+                checkbox_layout = checkbox_item.layout()
+                checkbox = checkbox_layout.itemAt(0).widget()  # Get the checkbox from the layout
+                if checkbox.isChecked():
+                    points = int(self.comment_table.item(row, 3).text())
+                    total_score -= points
+    
+        return total_score
+    
     # Exports the checked rows into a file
     def save_comments_to_file(self):
         # Automatically prefill the filename with the current PDF name and comments
         default_filename = f"{self.current_pdf_name}_comments.txt"
+        
         # Allows the user to choose where to save the file and what to name it
         file_path, _ = QFileDialog.getSaveFileName(self, "Save Comments", default_filename, "Text Files (*.txt)")
         if file_path:
             try:
+                total_score = int(self.points)  # Assuming points is the total points saved from the first page
                 with open(file_path, 'w') as file:
+                    
+                    # Calculate the total score
+                    total_score = self.calculate_total_score()
+                    # Write the total score to the file
+                    file.write(f"Total Score: {total_score}\n\n")
+                    
                     # Checks which rows are checked and will be included in the export
                     for row in range(self.comment_table.rowCount()):
                         checkbox_item = self.comment_table.cellWidget(row, 0)
+                       
                         if isinstance(checkbox_item, QWidget):  # Check if the cell contains a widget
                             checkbox_layout = checkbox_item.layout()
                             checkbox = checkbox_layout.itemAt(0).widget()  # Get the checkbox from the layout
+                            
                             if checkbox.isChecked():
                                 question = self.comment_table.item(row, 1).text()
                                 comment = self.comment_table.item(row, 2).text()
                                 points = self.comment_table.item(row, 3).text()
                                 file.write(f"Question #: {question}\nComment: {comment}\nPoints Deducted: {points}\n\n")
+                
                 QMessageBox.information(self, "Success", "Your selected comments were saved successfully!")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"An error occurred while saving your comments: {str(e)}")
